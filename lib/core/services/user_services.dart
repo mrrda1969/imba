@@ -22,7 +22,7 @@ class UserServices {
   }
 
   // create user
-  Future<User> createUser({
+  Future<String> createUser({
     required String email,
     required String firstName,
     required String lastName,
@@ -41,7 +41,12 @@ class UserServices {
         'verification_code': verificationCode,
         'phone_number': phoneNumber
       });
-      return User.fromJson(response.data);
+
+      if (response.statusCode == 200) {
+        return 'User created successfully';
+      } else {
+        return 'Failed to create user';
+      }
     } catch (e) {
       throw Exception('Failed to create user: $e');
     }
@@ -53,7 +58,12 @@ class UserServices {
       final response = await _dio.post('$_baseUrl/api/method/imba.www.main.bnb_verification', data: {
         'phone_number': phoneNumber,
       });
-      return response.data['verification_code'];
+
+      if (response.statusCode == 200) {
+        return response.data['verification_code'];
+      } else {
+        return 'Failed to get verification code';
+      }
     } catch (e) {
       throw Exception('Failed to get verification code: $e');
     }

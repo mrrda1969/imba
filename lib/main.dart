@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/di/service_locator.dart';
 import 'app.dart';
 
@@ -14,9 +15,11 @@ void main() async {
   ServiceLocator.initialize();
 
   runApp(
-    MultiProvider(
-      providers: [Provider<ServiceLocator>(create: (_) => ServiceLocator())],
-      child: const ImbaApp(),
+    ProviderScope(
+      child: provider.MultiProvider(
+        providers: [provider.Provider<ServiceLocator>(create: (_) => ServiceLocator())],
+        child: const ImbaApp(),
+      ),
     ),
   );
 }
