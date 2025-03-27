@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const primaryColor = Color(0xFF9C27B0); // Vibrant purple
+  static const _primaryColor = Color(0xFF9C27B0); // Vibrant purple
   static const _secondaryColor = Color(0xFF03DAC6);
   static const _errorColor = Color(0xFFB00020);
   static const _backgroundColor = Color(0xFFF5F5F5);
@@ -11,7 +11,7 @@ class AppTheme {
   static const _whitesmokeColor = Color(0xFFF5F5F5);
 
   static final ColorScheme _lightColorScheme = ColorScheme.light(
-    primary: primaryColor,
+    primary: _primaryColor,
     secondary: _secondaryColor,
     error: _errorColor,
     surface: _surfaceColor,
@@ -22,7 +22,7 @@ class AppTheme {
   );
 
   static final ColorScheme _darkColorScheme = ColorScheme.dark(
-    primary: primaryColor,
+    primary: _primaryColor,
     secondary: _secondaryColor,
     error: _errorColor,
     surface: Colors.grey[800]!,
@@ -37,7 +37,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: _lightColorScheme,
       appBarTheme: const AppBarTheme(
-        backgroundColor: primaryColor,
+        backgroundColor: _primaryColor,
         foregroundColor: Colors.white,
       ),
       cardTheme: CardTheme(
@@ -58,12 +58,12 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: primaryColor),
+          borderSide: const BorderSide(color: _primaryColor),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
+          backgroundColor: _primaryColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -98,12 +98,12 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: primaryColor),
+          borderSide: const BorderSide(color: _primaryColor),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
+          backgroundColor: _primaryColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

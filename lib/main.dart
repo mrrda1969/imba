@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:imba/app.dart';
-import 'package:imba/core/services/service_locator.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import 'core/di/service_locator.dart';
+import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  final prefs = await SharedPreferences.getInstance();
-  
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
+  // Initialize service locator
+  ServiceLocator.initialize();
+
   runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-      ],
-      child: const App(),
+    MultiProvider(
+      providers: [Provider<ServiceLocator>(create: (_) => ServiceLocator())],
+      child: const ImbaApp(),
     ),
   );
 }

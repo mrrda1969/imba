@@ -1,51 +1,50 @@
+
 import 'package:equatable/equatable.dart';
 
-enum UserRole { agent, landlord, user }
-
 class PropertyListing extends Equatable {
-  final String id;
+  final String name;
   final String listingName;
+  final String listingOwner;
+  final String listingAgent;
   final String location;
-  final String price;
-  final String agent;
-  final String propertyOwner;
+  final double price;
   final String service;
   final String description;
-  
 
-  const PropertyListing({
-    required this.id,
+  PropertyListing({
+    required this.name,
     required this.listingName,
+    required this.listingOwner,
+    required this.listingAgent,
     required this.location,
     required this.price,
-    required this.agent,
-    required this.propertyOwner,
     required this.service,
     required this.description,
-    
   });
 
+  // Factory method to convert JSON to a Listing object
   factory PropertyListing.fromJson(Map<String, dynamic> json) {
     return PropertyListing(
-      id: json['id'] as String,
-      listingName: json['listingName'] as String,
-      location: json['location'] as String,
-      price: json['price'] as String,
-      agent: json['agent'] as String,
-      propertyOwner: json['propertyOwner'] as String,
-      service: json['service'] as String,
-      description: json['description'] as String,
+      name: json['name'],
+      listingName: json['listing_name'],
+      listingOwner: json['listing_owner'],
+      listingAgent: json['listing_agent'],
+      location: json['location'],
+      price: (json['price'] as num).toDouble(),
+      service: json['service'],
+      description: json['description'],
     );
   }
 
+
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'listingName': listingName,
+      'name': name,
+      'listing_name': listingName,
       'location': location,
       'price': price,
-      'agent': agent,
-      'propertyOwner': propertyOwner,
+      'listing_agent': listingAgent,
+      'listing_owner': listingOwner,
       'service': service,
       'description': description,
       
@@ -54,37 +53,14 @@ class PropertyListing extends Equatable {
 
   @override
   List<Object?> get props => [
+        name,
         listingName,
         location,
         price,
-        agent,
-        propertyOwner,
+        listingAgent,
+        listingOwner,
         service,
         description,
         
       ];
-
-  PropertyListing copyWith({
-    String? id,
-    String? email,
-    String? fullName,
-    String? phoneNumber,
-    String? profileImage,
-    UserRole? role,
-    DateTime? createdAt,
-    bool? isVerified,
-    List<String>? favoriteProperties,
-  }) {
-    return PropertyListing(
-      id: id ?? this.id,
-      listingName: listingName ?? listingName,
-      location: location ?? location,
-      price: price ?? price,
-      agent: agent ?? agent,
-      propertyOwner: propertyOwner ?? propertyOwner,
-      service: service ?? service,
-      description: description ?? description,
-      
-    );
-  }
 }

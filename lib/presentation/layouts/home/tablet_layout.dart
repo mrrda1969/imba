@@ -1,0 +1,69 @@
+import 'package:flutter/material.dart';
+
+class TabletHomeLayout extends StatelessWidget {
+  final int currentIndex;
+  final List<Widget> screens;
+  final ValueChanged<int> onIndexChanged;
+
+  const TabletHomeLayout({
+    super.key,
+    required this.currentIndex,
+    required this.screens,
+    required this.onIndexChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Imba'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // TODO: Implement search
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {
+              // TODO: Implement notifications
+            },
+          ),
+        ],
+      ),
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: currentIndex,
+            onDestinationSelected: onIndexChanged,
+            destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: Text('Home'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.favorite_outline),
+                selectedIcon: Icon(Icons.favorite),
+                label: Text('Favorites'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.message_outlined),
+                selectedIcon: Icon(Icons.message),
+                label: Text('Messages'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.person_outline),
+                selectedIcon: Icon(Icons.person),
+                label: Text('Profile'),
+              ),
+            ],
+          ),
+          const VerticalDivider(thickness: 1, width: 1),
+          Expanded(child: screens[currentIndex]),
+        ],
+      ),
+    );
+  }
+}
