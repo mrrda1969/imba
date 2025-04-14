@@ -17,19 +17,20 @@ class TabletHomeLayout extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Imba'),
+        automaticallyImplyLeading: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: Implement search
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Implement notifications
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.search),
+          //   onPressed: () {
+          //     // TODO: Implement search
+          //   },
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.notifications_outlined),
+          //   onPressed: () {
+          //     // TODO: Implement notifications
+          //   },
+          // ),
         ],
       ),
       body: Row(

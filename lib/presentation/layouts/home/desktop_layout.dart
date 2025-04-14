@@ -17,35 +17,59 @@ class DesktopHomeLayout extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
-          NavigationRail(
-            extended: true,
-            selectedIndex: currentIndex,
-            onDestinationSelected: onIndexChanged,
-            destinations: const [
-              NavigationRailDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: Text('Home'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.favorite_outline),
-                selectedIcon: Icon(Icons.favorite),
-                label: Text('Favorites'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.message_outlined),
-                selectedIcon: Icon(Icons.message),
-                label: Text('Messages'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person),
-                label: Text('Profile'),
-              ),
-            ],
+          // Left Sidebar
+          Container(
+            width: 360,
+            color: Colors.grey[200],
+            child: NavigationRail(
+              extended: true,
+              selectedIndex: currentIndex,
+              onDestinationSelected: onIndexChanged,
+              destinations: const [
+                NavigationRailDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: Text('Home'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.favorite_outline),
+                  selectedIcon: Icon(Icons.favorite),
+                  label: Text('Favorites'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.message_outlined),
+                  selectedIcon: Icon(Icons.message),
+                  label: Text('Messages'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person),
+                  label: Text('Profile'),
+                ),
+              ],
+            ),
           ),
-          const VerticalDivider(thickness: 1, width: 1),
-          Expanded(child: screens[currentIndex]),
+          // const VerticalDivider(thickness: 0, width: 1),
+
+          // Main Content Area
+          Expanded(flex: 2, child: screens[currentIndex]),
+
+          // Right Sidebar
+          Container(
+            width: 300,
+            color: Colors.grey[100],
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'Suggestions',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

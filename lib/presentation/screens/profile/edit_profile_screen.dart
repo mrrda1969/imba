@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:imba/config/routes.dart';
 import 'package:provider/provider.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/profile_repository.dart';
@@ -13,8 +12,7 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _firstNameController;
-  late TextEditingController _lastNameController;
+  late TextEditingController _fullNameController;
   late TextEditingController _phoneController;
   bool _isLoading = false;
 
@@ -22,15 +20,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void initState() {
     super.initState();
     final user = context.read<User?>();
-    _firstNameController = TextEditingController(text: user?.firstName);
-    _lastNameController = TextEditingController(text: user?.lastName);
+    _fullNameController = TextEditingController(text: user?.fullName);
     _phoneController = TextEditingController(text: user?.phoneNumber);
   }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
+    _fullNameController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
@@ -39,37 +35,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
 
-      // try {
-      //   final repository = context.read<ProfileRepository>();
-      //   await repository.updateProfile(
-      //     firstName: _firstNameController.text,
-      //     lastName: _lastNameController.text,
-      //     phoneNumber: _phoneController.text,
-      //   );
+      try {
+        final repository = context.read<ProfileRepository>();
+        await repository.updateProfile(
+          fullName: _fullNameController.text,
+          phoneNumber: _phoneController.text,
+        );
 
-      //   if (mounted) {
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       const SnackBar(content: Text('Profile updated successfully')),
-      //     );
-      //     Navigator.pop(context);
-      //   }
-      // } catch (e) {
-      //   if (mounted) {
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       SnackBar(content: Text('Failed to update profile: $e')),
-      //     );
-      //   }
-      // } finally {
-      //   if (mounted) {
-      //     setState(() => _isLoading = false);
-      //   }
-      // }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile updated successfully')),
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to update profile: $e')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final email = ModalRoute.of(context)?.settings.arguments as String;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),
@@ -127,28 +121,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 32),
             TextFormField(
-              controller: _firstNameController,
+              controller: _fullNameController,
               decoration: const InputDecoration(
-                labelText: 'First Name',
+                labelText: 'Full Name',
                 prefixIcon: Icon(Icons.person),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your full name';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _lastNameController,
-              decoration: const InputDecoration(
-                labelText: 'Last Name',
-                prefixIcon: Icon(Icons.person),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your last name';
                 }
                 return null;
               },
@@ -203,11 +183,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               try {
                                 final repository =
                                     context.read<ProfileRepository>();
-                                await repository.deleteAccount(email: email);
+                                await repository.deleteAccount();
                                 if (mounted) {
                                   Navigator.pushNamedAndRemoveUntil(
                                     context,
-                                    AppRoutes.login.name,
+                                    '/login',
                                     (route) => false,
                                   );
                                 }

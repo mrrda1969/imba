@@ -1,70 +1,78 @@
 import 'package:dio/dio.dart';
-import 'package:imba/data/models/user.dart';
+import '../models/user.dart';
 
 class ProfileRepository {
   final Dio _dio;
   final String _baseUrl;
-  User? _currentUser;
 
-  ProfileRepository({required Dio dio, String? baseUrl})
+  ProfileRepository({required Dio dio, required String baseUrl})
     : _dio = dio,
-      _baseUrl = baseUrl ?? 'https://imba.durihub.co.zw';
+      _baseUrl = baseUrl;
 
+  // Dummy user data for testing
+  User get dummyUser => User(
+    id: '1',
+    email: 'john.doe@example.com',
+    fullName: 'John Doe',
+    phoneNumber: '+1234567890',
+    profileImage: 'https://i.pravatar.cc/300',
+    role: UserRole.tenant,
+    createdAt: DateTime.now().subtract(const Duration(days: 30)),
+    isVerified: true,
+    favoriteProperties: ['1', '2', '3'],
+  );
 
-  Future<User> getCurrentUser({String? email,String? phoneNumber}) async {
-
+  Future<User> getCurrentUser() async {
     try {
-      final response = await _dio.get('$_baseUrl/api/method/imba.www.main.get_user_by_email_or_phone', queryParameters: {
-        'email': email,
-        'phone_number': phoneNumber,
-      });
-      return User.fromJson(response.data);
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 1));
+      return dummyUser;
     } catch (e) {
       throw Exception('Failed to fetch user profile: $e');
     }
   }
 
-  Stream<User?> userStream() async* {
-    if (_currentUser != null) {
-      yield _currentUser;
-    }
-    
+  Future<User> updateProfile({
+    String? fullName,
+    String? phoneNumber,
+    String? profileImage,
+  }) async {
     try {
-      final user = await getCurrentUser();
-      _currentUser = user;
-      yield user;
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 1));
+      return dummyUser.copyWith(
+        fullName: fullName,
+        phoneNumber: phoneNumber,
+        profileImage: profileImage,
+      );
     } catch (e) {
-      yield null;
+      throw Exception('Failed to update profile: $e');
     }
   }
 
-  // get all users
-  Future<List<User>> getAllUsers() async {
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
     try {
-      final response = await _dio.get('$_baseUrl/api/method/imba.www.main.get_all_users');
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 1));
 
-      if (response.statusCode == 200) {
-        List<dynamic> usersJson = response.data['data'];
-        List<User> users = usersJson.map((json) => User.fromJson(json)).toList();
-        return users;
-      } else {
-        throw Exception('Failed to fetch users');
+      // Simulate validation
+      if (currentPassword == 'wrong_password') {
+        throw Exception('Current password is incorrect');
       }
     } catch (e) {
-      throw Exception('Failed to fetch users: $e');
+      throw Exception('Failed to change password: $e');
     }
   }
 
-  // delete user
-  Future<void> deleteAccount({required String email}) async {
+  Future<void> deleteAccount() async {
     try {
-      await _dio.delete('$_baseUrl/api/method/imba.www.main.delete_user_by_email', queryParameters: {
-        'email': email,
-      });
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 1));
     } catch (e) {
       throw Exception('Failed to delete account: $e');
     }
   }
-
-  
 }

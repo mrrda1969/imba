@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:imba/data/models/property_listing_model.dart';
-import 'package:imba/data/repositories/property_repository.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:imba/core/providers/repository_providers.dart';
+import 'package:imba/data/models/property.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class PropertyDetailScreen extends StatefulWidget {
+class PropertyDetailScreen extends ConsumerStatefulWidget {
   final String propertyId;
 
   const PropertyDetailScreen({super.key, required this.propertyId});
 
   @override
-  State<PropertyDetailScreen> createState() => _PropertyDetailScreenState();
+  ConsumerState<PropertyDetailScreen> createState() =>
+      _PropertyDetailScreenState();
 }
 
-class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
-  late Future<PropertyListing> _propertyFuture;
+class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
+  late Future<Property> _propertyFuture;
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
+  int _currentImageIndex = 0;
 
   @override
   void initState() {
@@ -25,9 +28,9 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   }
 
   void _loadProperty() {
-    _propertyFuture = context.read<PropertyRepository>().getListingById(
-      widget.propertyId,
-    );
+    _propertyFuture = ref
+        .read(propertyRepositoryProvider)
+        .getProperty(widget.propertyId);
   }
 
   void _showFullScreenImage(
@@ -50,7 +53,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<PropertyListing>(
+      body: FutureBuilder<Property>(
         future: _propertyFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -98,125 +101,187 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                         pinned: true,
                         flexibleSpace: FlexibleSpaceBar(
                           background: Stack(
+                            fit: StackFit.expand,
                             children: [
-                              PageView.builder(
-                                itemBuilder: (context, index) {
-                                  return Image.asset(
-                                    'assets/images/image.jpg',
-                                    fit: BoxFit.cover,
-                                  );
-                                },
-                                itemCount: 1,
+                              GestureDetector(
+                                onTap:
+                                    () => _showFullScreenImage(
+                                      context,
+                                      property.images[_currentImageIndex],
+                                      _currentImageIndex,
+                                      property.images,
+                                    ),
+                                child: Image.network(
+                                  property.images[_currentImageIndex],
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                               Positioned(
                                 bottom: 16,
                                 left: 0,
                                 right: 0,
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(
-                                    1,
-                                    (index) => IconButton(
-                                      icon: const Icon(Icons.favorite),
-                                      onPressed: () {},
+                                  mainAxisAlignment:
+                                      MainAxisAlignment
+                                          .center, // Center the dots horizontally
+                                  children: [
+                                    for (
+                                      int i = 0;
+                                      i < property.images.length;
+                                      i++
+                                    )
+                                      Container(
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                        ),
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color:
+                                              _currentImageIndex == i
+                                                  ? Colors.white
+                                                  : Colors.white.withOpacity(
+                                                    0.5,
+                                                  ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+
+                              if (property.images.length > 1) ...[
+                                Positioned(
+                                  left: 16,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Center(
+                                    child: IconButton(
+                                      icon: const Icon(
+                                        Icons.arrow_back_ios,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _currentImageIndex =
+                                              (_currentImageIndex -
+                                                  1 +
+                                                  property.images.length) %
+                                              property.images.length;
+                                        });
+                                      },
                                     ),
                                   ),
                                 ),
-                              ),
+                                Positioned(
+                                  right: 16,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Center(
+                                    child: IconButton(
+                                      icon: const Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _currentImageIndex =
+                                              (_currentImageIndex + 1) %
+                                              property.images.length;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
-                        leading: IconButton(
-                          icon: const Icon(Icons.arrow_back),
-                          onPressed: () => Navigator.pop(context),
-                        ),
                         actions: [
-                          
+                          IconButton(
+                            icon: const Icon(Icons.favorite_border),
+                            onPressed: () {
+                              // ref
+                              //     .read(propertyProvider.notifier)
+                              //     .toggleFavorite(property);
+                            },
+                          ),
                         ],
                       ),
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                property.listingName,
+                                property.title,
                                 style:
-                                    Theme.of(context).textTheme.headlineMedium,
+                                    Theme.of(context).textTheme.headlineSmall,
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                _currencyFormat.format(property.price),
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                property.location,
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
-                              
-                              const SizedBox(height: 32),
-                              LayoutBuilder(
-                                builder: (context, constraints) {
-                                  if (constraints.maxWidth > 800) {
-                                    return Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          flex: 2,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Description',
-                                                style:
-                                                    Theme.of(
-                                                      context,
-                                                    ).textTheme.titleLarge,
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Text(
-                                                property.description,
-                                                style:
-                                                    Theme.of(
-                                                      context,
-                                                    ).textTheme.bodyLarge,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 32),
-                                        
-                                      ],
-                                    );
-                                  } else {
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Description',
-                                          style:
-                                              Theme.of(
-                                                context,
-                                              ).textTheme.titleLarge,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          property.description,
-                                          style:
-                                              Theme.of(
-                                                context,
-                                              ).textTheme.bodyLarge,
-                                        ),
-                                        
-                                      ],
-                                    );
+                              const SizedBox(height: 16),
+                              Text(
+                                _currencyFormat.format(property.price),
+                                style:
+                                    Theme.of(context).textTheme.headlineMedium,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                property.description,
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                              // const SizedBox(height: 16),
+                              // Row(
+                              //   children: [
+                              //     _PropertyFeature(
+                              //       icon: Icons.bed,
+                              //       label: '${property.bedrooms} Bedrooms',
+                              //     ),
+                              //     const SizedBox(width: 16),
+                              //     _PropertyFeature(
+                              //       icon: Icons.bathtub,
+                              //       label: '${property.bathrooms} Bathrooms',
+                              //     ),
+                              //     const SizedBox(width: 16),
+                              //     _PropertyFeature(
+                              //       icon: Icons.area_chart,
+                              //       label: '${property.area} sqft',
+                              //     ),
+                              //   ],
+                              // ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Amenities',
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children:
+                                    property.amenities
+                                        .map(
+                                          (amenity) =>
+                                              Chip(label: Text(amenity)),
+                                        )
+                                        .toList(),
+                              ),
+                              const SizedBox(height: 16),
+                              FilledButton(
+                                onPressed: () async {
+                                  final url = Uri.parse(
+                                    'https://www.google.com/maps/search/?api=1&query=${property.latitude},${property.longitude}',
+                                  );
+                                  if (await canLaunchUrl(url)) {
+                                    await launchUrl(url);
                                   }
                                 },
+                                child: const Text('View on Map'),
                               ),
                             ],
                           ),
@@ -226,70 +291,23 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                   ),
                 ),
               ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1000),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, -2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              icon: const Icon(Icons.phone_outlined),
-                              label: const Text('Call'),
-                              onPressed: () {
-                                // TODO: Implement call functionality
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: FilledButton.icon(
-                              icon: const Icon(Icons.payment),
-                              label: const Text('Message'),
-                              onPressed:
-                                  () {
-                                    // TODO: Implement message functionality
-                                  }
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           );
         },
       ),
     );
   }
+}
 
-  
+class _PropertyFeature extends StatelessWidget {
+  final IconData icon;
+  final String label;
 
-  Widget _buildFeature(BuildContext context, IconData icon, String text) {
-    return Column(
-      children: [
-        Icon(icon, size: 32),
-        const SizedBox(height: 4),
-        Text(text, style: Theme.of(context).textTheme.bodyMedium),
-      ],
-    );
+  const _PropertyFeature({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(children: [Icon(icon), const SizedBox(width: 8), Text(label)]);
   }
 }
 
@@ -307,46 +325,43 @@ class _FullScreenImageView extends StatefulWidget {
 }
 
 class _FullScreenImageViewState extends State<_FullScreenImageView> {
-  late PageController _pageController;
-  late int _currentIndex;
+  late int currentIndex;
+  late PageController pageController;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: widget.initialIndex);
-    _currentIndex = widget.initialIndex;
+    currentIndex = widget.initialIndex;
+    pageController = PageController(initialPage: widget.initialIndex);
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          '${_currentIndex + 1} / ${widget.images.length}',
+          '${currentIndex + 1} / ${widget.images.length}',
           style: const TextStyle(color: Colors.white),
         ),
+        centerTitle: true,
       ),
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
           PageView.builder(
             itemCount: widget.images.length,
-            controller: _pageController,
+            controller: pageController,
             onPageChanged: (index) {
               setState(() {
-                _currentIndex = index;
+                currentIndex = index;
               });
             },
             itemBuilder: (context, index) {
@@ -354,28 +369,6 @@ class _FullScreenImageViewState extends State<_FullScreenImageView> {
                 imageProvider: NetworkImage(widget.images[index]),
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 2,
-                initialScale: PhotoViewComputedScale.contained,
-                errorBuilder: (context, error, stackTrace) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.broken_image,
-                          size: 64,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Failed to load image',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.titleLarge?.copyWith(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  );
-                },
               );
             },
           ),
@@ -386,14 +379,12 @@ class _FullScreenImageViewState extends State<_FullScreenImageView> {
               bottom: 0,
               child: Center(
                 child: IconButton(
-                  icon: const Icon(Icons.chevron_left, color: Colors.white),
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                   onPressed: () {
-                    if (_pageController.page! > 0) {
-                      _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
+                    pageController.previousPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
                   },
                 ),
               ),
@@ -404,14 +395,15 @@ class _FullScreenImageViewState extends State<_FullScreenImageView> {
               bottom: 0,
               child: Center(
                 child: IconButton(
-                  icon: const Icon(Icons.chevron_right, color: Colors.white),
+                  icon: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white,
+                  ),
                   onPressed: () {
-                    if (_pageController.page! < widget.images.length - 1) {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
+                    pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
                   },
                 ),
               ),

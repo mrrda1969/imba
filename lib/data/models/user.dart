@@ -1,78 +1,94 @@
 import 'package:equatable/equatable.dart';
 
-enum UserRole { user, agent, landlord }
-
-extension UserRoleExtension on UserRole {
-  static UserRole fromString(String role) {
-    switch (role) {
-      case 'bnb_clients':
-        return UserRole.user;
-      case 'bnb_agents':
-        return UserRole.agent;
-      case 'bnb_property_owners':
-        return UserRole.landlord;
-      default:
-        throw ArgumentError('Invalid role: $role');
-    }
-  }
-
-  String toApiString() {
-    switch (this) {
-      case UserRole.user:
-        return 'bnb_clients';
-      case UserRole.agent:
-        return 'bnb_agents';
-      case UserRole.landlord:
-        return 'bnb_property_owners';
-    }
-  }
-}
+enum UserRole { tenant, landlord, agent }
 
 class User extends Equatable {
+  final String id;
   final String email;
-  final String firstName;
-  final String lastName;
-  final String phoneNumber;
+  final String fullName;
+  final String? phoneNumber;
+  final String? profileImage;
   final UserRole role;
-  final String? password;
-  final String? verificationCode;
+  final DateTime createdAt;
+  final bool isVerified;
+  final List<String> favoriteProperties;
 
   const User({
+    required this.id,
     required this.email,
-    required this.firstName,
-    required this.lastName,
-    required this.phoneNumber,
+    required this.fullName,
+    this.phoneNumber,
+    this.profileImage,
     required this.role,
-    this.password,
-    this.verificationCode,
+    required this.createdAt,
+    required this.isVerified,
+    required this.favoriteProperties,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
+      id: json['id'] as String,
       email: json['email'] as String,
-      firstName: json['first_name'] as String,
-      lastName: json['last_name'] as String,
-      phoneNumber: json['phone_number'] as String,
-      role: UserRoleExtension.fromString(json['role'] as String),
-      password: json['password'] as String?,
-      verificationCode: json['verification_code'] as String?,
+      fullName: json['fullName'] as String,
+      phoneNumber: json['phoneNumber'] as String?,
+      profileImage: json['profileImage'] as String?,
+      role: UserRole.values.firstWhere(
+        (role) => role.toString() == 'UserRole.${json['role']}',
+      ),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      isVerified: json['isVerified'] as bool,
+      favoriteProperties: List<String>.from(json['favoriteProperties'] as List),
     );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {
+    return {
+      'id': id,
       'email': email,
-      'first_name': firstName,
-      'last_name': lastName,
-      'phone_number': phoneNumber,
-      'role': role.toApiString(),
-      if (password != null) 'password': password,
-      if (verificationCode != null) 'verification_code': verificationCode,
+      'fullName': fullName,
+      'phoneNumber': phoneNumber,
+      'profileImage': profileImage,
+      'role': role.toString().split('.').last,
+      'createdAt': createdAt.toIso8601String(),
+      'isVerified': isVerified,
+      'favoriteProperties': favoriteProperties,
     };
-    
-    return data;
   }
 
   @override
-  List<Object?> get props => [email, firstName, lastName, phoneNumber, role, password, verificationCode];
+  List<Object?> get props => [
+        id,
+        email,
+        fullName,
+        phoneNumber,
+        profileImage,
+        role,
+        createdAt,
+        isVerified,
+        favoriteProperties,
+      ];
+
+  User copyWith({
+    String? id,
+    String? email,
+    String? fullName,
+    String? phoneNumber,
+    String? profileImage,
+    UserRole? role,
+    DateTime? createdAt,
+    bool? isVerified,
+    List<String>? favoriteProperties,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      profileImage: profileImage ?? this.profileImage,
+      role: role ?? this.role,
+      createdAt: createdAt ?? this.createdAt,
+      isVerified: isVerified ?? this.isVerified,
+      favoriteProperties: favoriteProperties ?? this.favoriteProperties,
+    );
+  }
 }

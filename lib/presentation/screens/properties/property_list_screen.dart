@@ -1,34 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:imba/config/routes.dart';
-import 'package:imba/data/models/property_listing_model.dart';
-import 'package:imba/presentation/providers/property_provider.dart';
-import 'package:provider/provider.dart';
-import '../../widgets/property_card.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:imba/core/providers/property_provider.dart';
+import 'package:imba/presentation/widgets/property_card.dart';
 
-class PropertyListScreen extends StatefulWidget {
+class PropertyListScreen extends ConsumerStatefulWidget {
   const PropertyListScreen({super.key});
 
   @override
-  State<PropertyListScreen> createState() => _PropertyListScreenState();
+  ConsumerState<PropertyListScreen> createState() => _PropertyListScreenState();
 }
 
-class _PropertyListScreenState extends State<PropertyListScreen> {
+class _PropertyListScreenState extends ConsumerState<PropertyListScreen> {
   final _searchController = TextEditingController();
-  late Future<List<PropertyListing>> listedProperties;
   bool _showFilters = false;
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<PropertyProvider>().loadProperties().catchError((error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading properties: ${error.toString()}'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      });
+      ref.read(propertyProvider.notifier).loadProperties();
     });
   }
 
@@ -55,291 +45,374 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PropertyProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          body: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                floating: true,
-                snap: true,
-                bottom: PreferredSize(
-                  preferredSize: Size.fromHeight(_showFilters ? 120 : 80),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _searchController,
-                                decoration: InputDecoration(
-                                  hintText: 'Search properties...',
-                                  prefixIcon: const Icon(Icons.search),
-                                  suffixIcon:
-                                      _searchController.text.isNotEmpty
-                                          ? IconButton(
-                                              icon: const Icon(Icons.clear),
-                                              onPressed: () {
-                                                _searchController.clear();
-                                                provider.setSearchQuery(null);
-                                              },
-                                            )
-                                          : null,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  filled: true,
-                                  fillColor:
-                                      Theme.of(context).colorScheme.surface,
-                                ),
-                                onChanged: (value) {
-                                  provider.setSearchQuery(
-                                    value.isEmpty ? null : value,
-                                  );
-                                },
+    final propertyState = ref.watch(propertyProvider);
+
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            floating: true,
+            snap: true,
+            title: const Text('Find Your Perfect Home'),
+            automaticallyImplyLeading: false,
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(_showFilters ? 120 : 80),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Search properties...',
+                              prefixIcon: const Icon(Icons.search),
+                              suffixIcon:
+                                  _searchController.text.isNotEmpty
+                                      ? IconButton(
+                                        icon: const Icon(Icons.clear),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          ref
+                                              .read(propertyProvider.notifier)
+                                              .setSearchQuery(null);
+                                        },
+                                      )
+                                      : null,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
+                              filled: true,
+                              fillColor: Theme.of(context).colorScheme.surface,
                             ),
-                            
-                          ],
-                        ),
-                      ),
-                      if (_showFilters) ...[
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              // TODO: Add filter chips
-                            ],
+                            onChanged: (value) {
+                              ref
+                                  .read(propertyProvider.notifier)
+                                  .setSearchQuery(value.isEmpty ? null : value);
+                            },
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(width: 8),
+                        IconButton.filledTonal(
+                          icon: const Icon(Icons.tune),
+                          onPressed: _showFilterBottomSheet,
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton.filledTonal(
+                          icon: const Icon(Icons.sort),
+                          onPressed: _showSortBottomSheet,
+                        ),
                       ],
-                    ],
-                  ),
-                ),
-                actions: [
-                  IconButton(
-                    icon: Icon(
-                      _showFilters ? Icons.filter_list_off : Icons.filter_list,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _showFilters = !_showFilters;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              if (provider.isLoading)
-                const SliverToBoxAdapter(
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: CircularProgressIndicator(),
                     ),
                   ),
-                )
-              else if (provider.error != null)
-                SliverToBoxAdapter(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                  if (_showFilters) ...[
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
                         children: [
-                          Text(
-                            'Error loading properties',
-                            style: Theme.of(context).textTheme.titleMedium,
+                          _FilterChip(
+                            label: 'All',
+                            selected: propertyState.propertyType == null,
+                            onSelected:
+                                (_) => ref
+                                    .read(propertyProvider.notifier)
+                                    .setPropertyType(null),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            provider.error.toString(),
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            textAlign: TextAlign.center,
+                          _FilterChip(
+                            label: 'Apartment',
+                            selected: propertyState.propertyType == 'Apartment',
+                            onSelected:
+                                (_) => ref
+                                    .read(propertyProvider.notifier)
+                                    .setPropertyType('Apartment'),
                           ),
-                          const SizedBox(height: 16),
-                          FilledButton.icon(
-                            onPressed: () => provider.loadProperties(),
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Retry'),
+                          _FilterChip(
+                            label: 'House',
+                            selected: propertyState.propertyType == 'House',
+                            onSelected:
+                                (_) => ref
+                                    .read(propertyProvider.notifier)
+                                    .setPropertyType('House'),
+                          ),
+                          _FilterChip(
+                            label: 'Penthouse',
+                            selected: propertyState.propertyType == 'Penthouse',
+                            onSelected:
+                                (_) => ref
+                                    .read(propertyProvider.notifier)
+                                    .setPropertyType('Penthouse'),
+                          ),
+                          _FilterChip(
+                            label: 'Studio',
+                            selected: propertyState.propertyType == 'Studio',
+                            onSelected:
+                                (_) => ref
+                                    .read(propertyProvider.notifier)
+                                    .setPropertyType('Studio'),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                )
-              else if (provider.propertyListings.isEmpty)
-                const SliverToBoxAdapter(
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text('No properties found'),
-                    ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.all(16),
-                  sliver: SliverGrid(
-                    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 400,
-                      mainAxisExtent: 400,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final property = provider.propertyListings[index];
-                      return PropertyCard(
-                        property: property,
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/property-detail',
-                            arguments: property.name,
-                          );
-                        },
-                      );
-                    }, childCount: provider.propertyListings.length),
-                  ),
+                    const SizedBox(height: 8),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  _showFilters ? Icons.filter_list_off : Icons.filter_list,
                 ),
+                onPressed: () {
+                  setState(() {
+                    _showFilters = !_showFilters;
+                  });
+                },
+              ),
             ],
           ),
-        );
-      },
+          if (propertyState.isLoading)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (propertyState.error != null)
+            SliverFillRemaining(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      propertyState.error!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed:
+                          () =>
+                              ref
+                                  .read(propertyProvider.notifier)
+                                  .loadProperties(),
+                      child: const Text('Try Again'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else if (propertyState.properties.isEmpty)
+            const SliverFillRemaining(
+              child: Center(child: Text('No properties found')),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.all(16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final property = propertyState.properties[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: PropertyCard(
+                      property: property,
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/property-detail',
+                          arguments: property.id,
+                        );
+                      },
+                      onFavorite: () {},
+                      // () => ref
+                      //     .read(propertyProvider.notifier)
+                      //     .toggleFavorite(property),
+                    ),
+                  );
+                }, childCount: propertyState.properties.length),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
 
-class _FilterBottomSheet extends StatelessWidget {
+// filepath: /home/rda/src/imba/lib/presentation/screens/properties/property_list_screen.dart
+class _FilterBottomSheet extends ConsumerWidget {
   const _FilterBottomSheet();
 
   @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<PropertyProvider>();
-    final theme = Theme.of(context);
-
-    return DraggableScrollableSheet(
-      initialChildSize: 0.7,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (context, scrollController) {
-        return SingleChildScrollView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Filters', style: theme.textTheme.titleLarge),
-                  TextButton(
-                    onPressed: () {
-                      provider.resetFilters();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Reset All'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Text('Price Range', style: theme.textTheme.titleMedium),
-              const SizedBox(height: 16),
-              RangeSlider(
-                values: RangeValues(
-                  provider.minPrice ?? 0,
-                  provider.maxPrice ?? 5000,
-                ),
-                min: 0,
-                max: 5000,
-                divisions: 50,
-                labels: RangeLabels(
-                  '\$${(provider.minPrice ?? 0).toStringAsFixed(0)}',
-                  '\$${(provider.maxPrice ?? 5000).toStringAsFixed(0)}',
-                ),
-                onChanged: (values) {
-                  provider.setPriceRange(values.start, values.end);
-                },
-              ),
-              const SizedBox(height: 24),
-              Text('Bedrooms', style: theme.textTheme.titleMedium),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                children: [
-                  // TODO: Add filter chips
-                ],
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () => Navigator.pop(context),
-                child: const SizedBox(
-                  width: double.infinity,
-                  child: Center(child: Text('Apply Filters')),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _SortBottomSheet extends StatelessWidget {
-  const _SortBottomSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<PropertyProvider>();
-    final theme = Theme.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final propertyState = ref.watch(propertyProvider);
 
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Sort By', style: theme.textTheme.titleLarge),
+          const Text(
+            'Filters',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Text('Price Range', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 16),
+          RangeSlider(
+            values: RangeValues(
+              propertyState.minPrice ?? 0,
+              propertyState.maxPrice ?? 5000,
+            ),
+            min: 0,
+            max: 5000,
+            divisions: 50,
+            labels: RangeLabels(
+              '\$${(propertyState.minPrice ?? 0).toStringAsFixed(0)}',
+              '\$${(propertyState.maxPrice ?? 5000).toStringAsFixed(0)}',
+            ),
+            onChanged: (values) {
+              ref
+                  .read(propertyProvider.notifier)
+                  .setPriceRange(values.start, values.end);
+            },
+          ),
+          const SizedBox(height: 24),
+          Text('Bedrooms', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            children: [
+              _FilterChip(
+                label: 'Any',
+                selected: propertyState.minBedrooms == null,
+                onSelected:
+                    (_) => ref
+                        .read(propertyProvider.notifier)
+                        .setMinBedrooms(null),
+              ),
+              _FilterChip(
+                label: '1+',
+                selected: propertyState.minBedrooms == 1,
+                onSelected:
+                    (_) =>
+                        ref.read(propertyProvider.notifier).setMinBedrooms(1),
+              ),
+              _FilterChip(
+                label: '2+',
+                selected: propertyState.minBedrooms == 2,
+                onSelected:
+                    (_) =>
+                        ref.read(propertyProvider.notifier).setMinBedrooms(2),
+              ),
+              _FilterChip(
+                label: '3+',
+                selected: propertyState.minBedrooms == 3,
+                onSelected:
+                    (_) =>
+                        ref.read(propertyProvider.notifier).setMinBedrooms(3),
+              ),
+              _FilterChip(
+                label: '4+',
+                selected: propertyState.minBedrooms == 4,
+                onSelected:
+                    (_) =>
+                        ref.read(propertyProvider.notifier).setMinBedrooms(4),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  await ref.read(propertyProvider.notifier).resetFilters();
+                  Navigator.pop(context);
+                },
+                child: const Text('Clear Filters'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Apply Filters'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SortBottomSheet extends ConsumerWidget {
+  const _SortBottomSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Sort By',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
           _SortOption(
             title: 'Price: Low to High',
-            selected: provider.sortBy == 'price' && provider.sortOrder == 'asc',
+            selected:
+                ref.read(propertyProvider).sortBy == 'price' &&
+                ref.read(propertyProvider).sortOrder == 'asc',
             onTap: () {
-              provider.setSorting('price', 'asc');
+              ref
+                  .read(propertyProvider.notifier)
+                  .setSortOptions('price', 'asc');
               Navigator.pop(context);
             },
           ),
           _SortOption(
             title: 'Price: High to Low',
             selected:
-                provider.sortBy == 'price' && provider.sortOrder == 'desc',
+                ref.read(propertyProvider).sortBy == 'price' &&
+                ref.read(propertyProvider).sortOrder == 'desc',
             onTap: () {
-              provider.setSorting('price', 'desc');
+              ref
+                  .read(propertyProvider.notifier)
+                  .setSortOptions('price', 'desc');
               Navigator.pop(context);
             },
           ),
-          _SortOption(
-            title: 'Newest First',
-            selected:
-                provider.sortBy == 'createdAt' && provider.sortOrder == 'desc',
-            onTap: () {
-              provider.setSorting('createdAt', 'desc');
+          // _SortOption(
+          //   title: 'Newest First',
+          //   selected:
+          //       ref.read(propertyProvider).sortBy == 'createdAt' &&
+          //       ref.read(propertyProvider).sortOrder == 'desc',
+          //   onTap: () {
+          //     ref
+          //         .read(propertyProvider.notifier)
+          //         .setSortOptions('createdAt', 'desc');
+          //     Navigator.pop(context);
+          //   },
+          // ),
+          // _SortOption(
+          //   title: 'Oldest First',
+          //   selected:
+          //       ref.read(propertyProvider).sortBy == 'createdAt' &&
+          //       ref.read(propertyProvider).sortOrder == 'asc',
+          //   onTap: () {
+          //     ref
+          //         .read(propertyProvider.notifier)
+          //         .setSortOptions('createdAt', 'asc');
+          //     Navigator.pop(context);
+          //   },
+          // ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
               Navigator.pop(context);
             },
-          ),
-          _SortOption(
-            title: 'Oldest First',
-            selected:
-                provider.sortBy == 'createdAt' && provider.sortOrder == 'asc',
-            onTap: () {
-              provider.setSorting('createdAt', 'asc');
-              Navigator.pop(context);
-            },
+            child: const Text('Apply Sorting'),
           ),
         ],
       ),

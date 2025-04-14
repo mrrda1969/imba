@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import '../../core/api/api_client.dart';
-import '../../core/errors/app_error.dart';
+import 'package:imba/core/api/api_client.dart';
+import 'package:imba/core/errors/app_error.dart';
 
 class PaymentService {
   final ApiClient _apiClient;

@@ -42,11 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.home,
-                size: 100,
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
+              Image.asset('assets/icon/logo.png', width: 150, height: 150),
               const SizedBox(height: 24),
               Text(
                 'Imba',
@@ -57,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Find Your Perfect Home',
+                'A place to find your place',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),

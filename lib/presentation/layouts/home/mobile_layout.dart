@@ -22,22 +22,23 @@ class MobileHomeLayout extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Imba'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: Implement search
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Implement notifications
-            },
-          ),
-        ],
+        automaticallyImplyLeading: false,
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.search),
+        //     onPressed: () {
+        //       // TODO: Implement search
+        //     },
+        //   ),
+        //   IconButton(
+        //     icon: const Icon(Icons.notifications_outlined),
+        //     onPressed: () {
+        //       // TODO: Implement notifications
+        //     },
+        //   ),
+        // ],
       ),
-      drawer: _buildDrawer(context, user, theme),
+      endDrawer: _buildDrawer(context, user, theme),
       body: screens[currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentIndex,
@@ -74,8 +75,12 @@ class MobileHomeLayout extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            
-            accountName: Text(user?.firstName ?? 'Guest User'),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: NetworkImage(
+                user?.profileImage ?? 'https://i.pravatar.cc/300',
+              ),
+            ),
+            accountName: Text(user?.fullName ?? 'Guest User'),
             accountEmail: Text(user?.email ?? ''),
             decoration: BoxDecoration(color: theme.colorScheme.primary),
           ),
@@ -110,10 +115,21 @@ class MobileHomeLayout extends StatelessWidget {
       leading: Icon(icon),
       title: Text(title),
       onTap: () {
+        Navigator.pop(context);
         if (index != null) {
           onIndexChanged(index);
+        } else {
+          switch (title) {
+            case 'Settings':
+              Navigator.pushNamed(context, '/settings');
+              break;
+            case 'Help & Support':
+              Navigator.pushNamed(context, '/help');
+              break;
+            case 'Logout':
+              Navigator.pushNamed(context, '/login');
+          }
         }
-        Navigator.pop(context);
       },
     );
   }

@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/services/payment_service.dart';
-import '../../core/errors/app_error.dart';
-import '../../core/api/api_client_provider.dart';
+import 'package:imba/core/api/api_client_provider.dart';
+import 'package:imba/data/services/payment_service.dart';
 
 final paymentServiceProvider = Provider<PaymentService>((ref) {
   final apiClient = ref.watch(apiClientProvider);

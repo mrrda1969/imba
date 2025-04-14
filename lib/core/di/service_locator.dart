@@ -1,17 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:imba/data/repositories/property_repository.dart';
-import 'package:imba/data/repositories/profile_repository.dart';
 import 'package:imba/core/services/payment_service.dart';
-
-
+import 'package:imba/data/repositories/profile_repository.dart';
+import 'package:imba/data/repositories/property_repository.dart';
 
 class ServiceLocator {
   late final Dio _dio;
   late final PropertyRepository propertyRepository;
   late final ProfileRepository profileRepository;
   late final PaymentService paymentService;
-  late final String _baseUrl;
 
   ServiceLocator() {
     _initializeDio();
@@ -20,10 +17,9 @@ class ServiceLocator {
   }
 
   void _initializeDio() {
-    _baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://imba.durihub.co.zw/';
     _dio = Dio(
       BaseOptions(
-        baseUrl: _baseUrl,
+        baseUrl: dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000',
         connectTimeout: const Duration(seconds: 5),
         receiveTimeout: const Duration(seconds: 3),
         headers: {
@@ -37,8 +33,10 @@ class ServiceLocator {
   }
 
   void _initializeRepositories() {
-    propertyRepository = PropertyRepository(dio: _dio, baseUrl: _baseUrl);
-    profileRepository = ProfileRepository(dio: _dio, baseUrl: _baseUrl);
+    final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000';
+
+    propertyRepository = PropertyRepository(baseUrl: baseUrl);
+    profileRepository = ProfileRepository(dio: _dio, baseUrl: baseUrl);
   }
 
   void _initializeServices() {
