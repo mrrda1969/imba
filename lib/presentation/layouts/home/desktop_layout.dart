@@ -46,6 +46,10 @@ class DesktopHomeLayout extends StatelessWidget {
                   selectedIcon: Icon(Icons.person),
                   label: Text('Profile'),
                 ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.list_alt_rounded),
+                  label: Text('My Listings'),
+                ),
               ],
             ),
           ),

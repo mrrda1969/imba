@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/profile_repository.dart';
@@ -185,10 +186,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     context.read<ProfileRepository>();
                                 await repository.deleteAccount();
                                 if (mounted) {
-                                  Navigator.pushNamedAndRemoveUntil(
+                                  Navigator.pushReplacementNamed(
                                     context,
                                     '/login',
-                                    (route) => false,
                                   );
                                 }
                               } catch (e) {

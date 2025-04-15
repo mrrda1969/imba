@@ -62,7 +62,6 @@ class PropertyNotifier extends StateNotifier<PropertyState> {
     }
   }
 
-  // filepath: /home/rda/src/imba/lib/core/providers/property_provider.dart
   Future<void> resetFilters() async {
     state = state.copyWith(
       searchQuery: null,

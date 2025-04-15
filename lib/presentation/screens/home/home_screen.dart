@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imba/presentation/screens/profile/profile_screen.dart';
+import 'package:imba/presentation/screens/properties/add_property_listing.dart';
 import 'package:imba/presentation/screens/properties/property_list_screen.dart';
 import 'package:imba/presentation/layouts/responsive_layout.dart';
 import 'package:imba/presentation/layouts/home/mobile_layout.dart';
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Center(child: Text('Favorites')),
     Center(child: Text('Messages')),
     ProfileScreen(),
+    AddPropertyListing(),
   ];
 
   @override

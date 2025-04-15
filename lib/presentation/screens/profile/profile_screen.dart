@@ -146,7 +146,8 @@ class ProfileScreen extends StatelessWidget {
             ),
             onPressed: () {
               // TODO: Implement logout
-              Navigator.pushReplacementNamed(context, '/login');
+              // Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pushNamed(context, '/login');
             },
             icon: const Icon(Icons.logout),
             label: const Text('Logout'),
