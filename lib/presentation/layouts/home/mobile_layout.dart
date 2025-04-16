@@ -23,20 +23,20 @@ class MobileHomeLayout extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Imba'),
         automaticallyImplyLeading: false,
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.search),
-        //     onPressed: () {
-        //       // TODO: Implement search
-        //     },
-        //   ),
-        //   IconButton(
-        //     icon: const Icon(Icons.notifications_outlined),
-        //     onPressed: () {
-        //       // TODO: Implement notifications
-        //     },
-        //   ),
-        // ],
+        actions: [
+          // IconButton(
+          //   icon: ImageIcon(AssetImage('assets/icon/search.png'), size: 16),
+          //   onPressed: () {
+          //     // TODO: Implement search
+          //   },
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.notifications_outlined),
+          //   onPressed: () {
+          //     // TODO: Implement notifications
+          //   },
+          // ),
+        ],
       ),
       endDrawer: _buildDrawer(context, user, theme),
       body: screens[currentIndex],
@@ -45,22 +45,22 @@ class MobileHomeLayout extends StatelessWidget {
         onDestinationSelected: onIndexChanged,
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
+            icon: ImageIcon(AssetImage('assets/icon/home.png')),
             selectedIcon: Icon(Icons.home),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.favorite_outline),
+            icon: ImageIcon(AssetImage('assets/icon/heart.png')),
             selectedIcon: Icon(Icons.favorite),
             label: 'Favorites',
           ),
           NavigationDestination(
-            icon: Icon(Icons.message_outlined),
+            icon: ImageIcon(AssetImage('assets/icon/envelope.png')),
             selectedIcon: Icon(Icons.message),
             label: 'Messages',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
+            icon: ImageIcon(AssetImage('assets/icon/user.png')),
             selectedIcon: Icon(Icons.person),
             label: 'Profile',
           ),

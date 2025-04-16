@@ -18,20 +18,7 @@ class TabletHomeLayout extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Imba'),
         automaticallyImplyLeading: false,
-        actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.search),
-          //   onPressed: () {
-          //     // TODO: Implement search
-          //   },
-          // ),
-          // IconButton(
-          //   icon: const Icon(Icons.notifications_outlined),
-          //   onPressed: () {
-          //     // TODO: Implement notifications
-          //   },
-          // ),
-        ],
+        actions: [],
       ),
       body: Row(
         children: [
@@ -40,22 +27,22 @@ class TabletHomeLayout extends StatelessWidget {
             onDestinationSelected: onIndexChanged,
             destinations: const [
               NavigationRailDestination(
-                icon: Icon(Icons.home_outlined),
+                icon: ImageIcon(AssetImage('assets/icon/home.png')),
                 selectedIcon: Icon(Icons.home),
                 label: Text('Home'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.favorite_outline),
+                icon: ImageIcon(AssetImage('assets/icon/heart.png')),
                 selectedIcon: Icon(Icons.favorite),
                 label: Text('Favorites'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.message_outlined),
+                icon: ImageIcon(AssetImage('assets/icon/envelope.png')),
                 selectedIcon: Icon(Icons.message),
                 label: Text('Messages'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.person_outline),
+                icon: ImageIcon(AssetImage('assets/icon/user.png')),
                 selectedIcon: Icon(Icons.person),
                 label: Text('Profile'),
               ),

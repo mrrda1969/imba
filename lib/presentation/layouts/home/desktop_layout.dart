@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class DesktopHomeLayout extends StatelessWidget {
   final int currentIndex;
@@ -27,23 +28,24 @@ class DesktopHomeLayout extends StatelessWidget {
               onDestinationSelected: onIndexChanged,
               destinations: const [
                 NavigationRailDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home),
+                  icon: FaIcon(FontAwesomeIcons.house),
+                  // selectedIcon: FaIcon(FontAwesomeIcons.House),
                   label: Text('Home'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.favorite_outline),
-                  selectedIcon: Icon(Icons.favorite),
+                  icon: FaIcon(FontAwesomeIcons.heart),
+                  selectedIcon: FaIcon(FontAwesomeIcons.solidHeart),
                   label: Text('Favorites'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.message_outlined),
-                  selectedIcon: Icon(Icons.message),
+                  icon: FaIcon(FontAwesomeIcons.message),
+                  selectedIcon: FaIcon(FontAwesomeIcons.solidMessage),
+                  // selectedIcon: Icon(Icons.message),
                   label: Text('Messages'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.person_outline),
-                  selectedIcon: Icon(Icons.person),
+                  icon: FaIcon(FontAwesomeIcons.user),
+                  selectedIcon: FaIcon(FontAwesomeIcons.solidUser),
                   label: Text('Profile'),
                 ),
                 NavigationRailDestination(

@@ -15,7 +15,7 @@ class ImbaApp extends ConsumerWidget {
       theme: isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       onGenerateRoute: AppRouter.onGenerateRoute,
-      initialRoute: '/splash',
+      initialRoute: '/home',
     );
   }
 }
