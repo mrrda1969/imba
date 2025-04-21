@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imba/core/providers/auth_provider.dart';
 import 'package:imba/data/models/user.dart';
+import 'package:imba/presentation/widgets/button/form_action_button.dart';
 import 'package:imba/presentation/widgets/form/dropdown_form_field.dart';
 import 'package:imba/presentation/widgets/form/input_text_field.dart';
 
@@ -76,6 +77,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sign Up'),
@@ -246,13 +249,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       },
                     ),
                     const SizedBox(height: 32),
-                    ElevatedButton(
+                    // ElevatedButton(
+                    //   onPressed: _signup,
+                    //   style: Theme.of(context).elevatedButtonTheme.style,
+                    //   child: const Text(
+                    //     'Sign Up',
+                    //     style: TextStyle(fontSize: 16),
+                    //   ),
+                    // ),
+                    FormActionButton(
+                      label: 'Sign Up',
                       onPressed: _signup,
-                      style: Theme.of(context).elevatedButtonTheme.style,
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      isLoading: authState.isLoading,
                     ),
                     const SizedBox(height: 16),
                     TextButton(

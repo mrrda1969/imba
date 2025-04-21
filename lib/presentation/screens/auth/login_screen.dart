@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imba/core/providers/auth_provider.dart';
 import 'package:imba/presentation/screens/auth/demo_credentials_screen.dart';
+import 'package:imba/presentation/widgets/button/form_action_button.dart';
 import 'package:imba/presentation/widgets/form/input_text_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -52,7 +53,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch the auth state
     final authState = ref.watch(authProvider);
 
     // Navigate to home if user is logged in
@@ -138,18 +138,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         },
                       ),
                       const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: authState.isLoading ? null : _login,
-                        child:
-                            authState.isLoading
-                                ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : const Text('Login'),
+                      FormActionButton(
+                        label: 'Login',
+                        isLoading: authState.isLoading,
+                        onPressed: _login,
                       ),
                       const SizedBox(height: 16),
                       TextButton(
