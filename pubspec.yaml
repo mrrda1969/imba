@@ -31,6 +31,7 @@ dependencies:
   geolocator: ^13.0.4
   flutter_launcher_icons: ^0.14.3
   font_awesome_flutter: ^10.8.0
+  flutter_cors: ^1.5.0
 
 dev_dependencies:
   flutter_test:

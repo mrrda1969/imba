@@ -46,7 +46,7 @@ class PropertyProvider with ChangeNotifier {
       // Use static data for filtering
       final allProperties = Property.getDummyProperties();
 
-      // Apply search query filter
+      // Apply filters
       _properties =
           allProperties.where((property) {
             final matchesQuery =
@@ -57,7 +57,7 @@ class PropertyProvider with ChangeNotifier {
                 property.description.toLowerCase().contains(
                   _searchQuery!.toLowerCase(),
                 ) ||
-                property.location.toLowerCase().contains(
+                (property.location?.toLowerCase() ?? '').contains(
                   _searchQuery!.toLowerCase(),
                 );
 
@@ -65,16 +65,34 @@ class PropertyProvider with ChangeNotifier {
                 _propertyType == null || property.type == _propertyType;
 
             final matchesPrice =
-                (_minPrice == null || property.price >= _minPrice!) &&
-                (_maxPrice == null || property.price <= _maxPrice!);
+                (_minPrice == null || (property.price ?? 0) >= _minPrice!) &&
+                (_maxPrice == null || (property.price ?? 0) <= _maxPrice!);
 
             final matchesBedrooms =
-                _minBedrooms == null || property.bedrooms >= _minBedrooms!;
+                _minBedrooms == null ||
+                (property.bedrooms != null &&
+                    property.bedrooms! >= _minBedrooms!);
+
             return matchesQuery &&
                 matchesType &&
                 matchesPrice &&
                 matchesBedrooms;
           }).toList();
+
+      // Apply sorting
+      if (_sortBy != null && _sortOrder != null) {
+        _properties.sort((a, b) {
+          int comparison = 0;
+          if (_sortBy == 'price') {
+            comparison = (a.price ?? 0).compareTo(b.price ?? 0);
+          } else if (_sortBy == 'createdAt') {
+            // TODO: Add createdAt field to Property model
+            comparison = 0;
+          }
+          return _sortOrder == 'asc' ? comparison : -comparison;
+        });
+      }
+
       _error = null;
     } catch (e) {
       _error = 'Failed to load properties: $e';
@@ -121,7 +139,17 @@ class PropertyProvider with ChangeNotifier {
     }
   }
 
-  // Filter setters
+  void resetFilters() {
+    _searchQuery = null;
+    _propertyType = null;
+    _minPrice = null;
+    _maxPrice = null;
+    _minBedrooms = null;
+    _sortBy = null;
+    _sortOrder = null;
+    loadProperties(); // This will call notifyListeners()
+  }
+
   void setSearchQuery(String? query) {
     _searchQuery = query;
     loadProperties();
@@ -146,17 +174,6 @@ class PropertyProvider with ChangeNotifier {
   void setSorting(String? by, String? order) {
     _sortBy = by;
     _sortOrder = order;
-    loadProperties();
-  }
-
-  void resetFilters() {
-    _searchQuery = null;
-    _propertyType = null;
-    _minPrice = null;
-    _maxPrice = null;
-    _minBedrooms = null;
-    _sortBy = null;
-    _sortOrder = null;
     loadProperties();
   }
 }

@@ -221,7 +221,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                property.location,
+                                property.location ?? 'No location specified',
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
                               const SizedBox(height: 16),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imba/core/providers/auth_provider.dart';
 import 'package:imba/data/models/user.dart';
+import 'package:imba/presentation/widgets/form/dropdown_form_field.dart';
+import 'package:imba/presentation/widgets/form/input_text_field.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -22,7 +24,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  UserRole _selectedRole = UserRole.landlord;
+  var _selectedRole = UserRole.landlord;
 
   @override
   void dispose() {
@@ -36,13 +38,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     super.dispose();
   }
 
-  void _togglePasswordVisibility() {
+  void _togglePasswordVisibility(String? _) {
     setState(() {
       _obscurePassword = !_obscurePassword;
     });
   }
 
-  void _toggleConfirmPasswordVisibility() {
+  void _toggleConfirmPasswordVisibility(String? _) {
     setState(() {
       _obscureConfirmPassword = !_obscureConfirmPassword;
     });
@@ -103,13 +105,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
+                          child: InputTextField(
+                            label: 'First Name',
                             controller: _firstNameController,
-                            decoration: const InputDecoration(
-                              labelText: 'First Name',
-                              prefixIcon: Icon(Icons.person_outline),
-                              filled: true,
-                            ),
+                            keyboardType: TextInputType.name,
                             validator:
                                 (value) =>
                                     value?.isEmpty == true ? 'Required' : null,
@@ -117,13 +116,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: TextFormField(
+                          child: InputTextField(
                             controller: _lastNameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Last Name',
-                              prefixIcon: Icon(Icons.person_outline),
-                              filled: true,
-                            ),
+                            label: 'Last Name',
+                            keyboardType: TextInputType.name,
+                            filled: true,
                             validator:
                                 (value) =>
                                     value?.isEmpty == true ? 'Required' : null,
@@ -132,14 +129,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
+
+                    InputTextField(
+                      label: 'Email',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined),
-                        filled: true,
-                      ),
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      filled: true,
                       validator: (value) {
                         if (value?.isEmpty == true) return 'Required';
                         if (!value!.contains('@')) return 'Invalid email';
@@ -147,14 +143,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
+
+                    InputTextField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: 'Phone Number',
-                        prefixIcon: Icon(Icons.phone_outlined),
-                        filled: true,
-                      ),
+                      label: 'Phone Number',
+                      prefixIcon: const Icon(Icons.phone_outlined),
+                      filled: true,
                       validator:
                           (value) => value?.isEmpty == true ? 'Required' : null,
                     ),
@@ -162,13 +157,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
+                          child: InputTextField(
                             controller: _verificationCodeController,
-                            decoration: const InputDecoration(
-                              labelText: 'Verification Code',
-                              prefixIcon: Icon(Icons.security),
-                              filled: true,
-                            ),
+                            label: 'Verification Code',
+                            prefixIcon: Icon(Icons.security),
+                            filled: true,
                             validator:
                                 (value) =>
                                     value?.isEmpty == true ? 'Required' : null,
@@ -190,43 +183,38 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<UserRole>(
-                      value: _selectedRole,
-                      decoration: const InputDecoration(
-                        labelText: 'Role',
-                        prefixIcon: Icon(Icons.work_outline),
-                        filled: true,
-                      ),
+                    DropdownFormField(
+                      label: 'Role',
                       items:
-                          UserRole.values.map((role) {
-                            return DropdownMenuItem(
-                              value: role,
-                              child: Text(role.name),
-                            );
-                          }).toList(),
+                          UserRole.values
+                              .map((role) => role.name)
+                              .toList(), // Convert to List<String>
+                      value:
+                          _selectedRole
+                              .name, // Use the name property for the selected value
                       onChanged: (value) {
                         if (value != null) {
-                          setState(() => _selectedRole = value);
+                          setState(() {
+                            _selectedRole = UserRole.values.firstWhere(
+                              (role) => role.name == value,
+                            );
+                          });
                         }
                       },
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
+                    InputTextField(
                       controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: _togglePasswordVisibility,
-                        ),
-                        filled: true,
+                      isPassword: _obscurePassword,
+                      label: 'Password',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
+                      onButtonPressed: _togglePasswordVisibility,
+                      filled: true,
                       validator: (value) {
                         if (value?.isEmpty == true) return 'Required';
                         if (value!.length < 6) {
@@ -236,22 +224,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
+                    InputTextField(
                       controller: _confirmPasswordController,
-                      obscureText: _obscureConfirmPassword,
-                      decoration: InputDecoration(
-                        labelText: 'Confirm Password',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureConfirmPassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: _toggleConfirmPasswordVisibility,
-                        ),
-                        filled: true,
+                      isPassword: _obscureConfirmPassword,
+                      label: 'Confirm Password',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
+                      onButtonPressed: _toggleConfirmPasswordVisibility,
+
+                      filled: true,
                       validator: (value) {
                         if (value?.isEmpty == true) return 'Required';
                         if (value != _passwordController.text) {
@@ -263,14 +248,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     const SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: _signup,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
+                      style: Theme.of(context).elevatedButtonTheme.style,
                       child: const Text(
                         'Sign Up',
                         style: TextStyle(fontSize: 16),

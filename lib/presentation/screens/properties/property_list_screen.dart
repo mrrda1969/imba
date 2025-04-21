@@ -11,8 +11,8 @@ class PropertyListScreen extends ConsumerStatefulWidget {
 }
 
 class _PropertyListScreenState extends ConsumerState<PropertyListScreen> {
-  final _searchController = TextEditingController();
-  bool _showFilters = false;
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -28,10 +28,19 @@ class _PropertyListScreenState extends ConsumerState<PropertyListScreen> {
     super.dispose();
   }
 
+  void _handleSearch(String query) {
+    if (query.isNotEmpty) {
+      ref.read(propertyProvider.notifier).searchProperties(query);
+    } else {
+      ref.read(propertyProvider.notifier).resetSearch();
+    }
+  }
+
   void _showFilterBottomSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => const _FilterBottomSheet(),
     );
   }
@@ -39,6 +48,7 @@ class _PropertyListScreenState extends ConsumerState<PropertyListScreen> {
   void _showSortBottomSheet() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       builder: (context) => const _SortBottomSheet(),
     );
   }
@@ -46,198 +56,166 @@ class _PropertyListScreenState extends ConsumerState<PropertyListScreen> {
   @override
   Widget build(BuildContext context) {
     final propertyState = ref.watch(propertyProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            floating: true,
-            snap: true,
-            title: const Text('Find Your Perfect Home'),
-            automaticallyImplyLeading: false,
-            bottom: PreferredSize(
-              preferredSize: Size.fromHeight(_showFilters ? 120 : 80),
-              child: Column(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            decoration: InputDecoration(
-                              hintText: 'Search properties...',
-                              prefixIcon: const Icon(Icons.search),
-                              suffixIcon:
-                                  _searchController.text.isNotEmpty
-                                      ? IconButton(
-                                        icon: const Icon(Icons.clear),
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          ref
-                                              .read(propertyProvider.notifier)
-                                              .setSearchQuery(null);
-                                        },
-                                      )
-                                      : null,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              filled: true,
-                              fillColor: Theme.of(context).colorScheme.surface,
+                  if (!_isSearching)
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      onPressed: () {
+                        setState(() {
+                          _isSearching = true;
+                        });
+                      },
+                    )
+                  else
+                    Expanded(
+                      child: Container(
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: 'Search properties...',
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () {
+                                setState(() {
+                                  _isSearching = false;
+                                  _searchController.clear();
+                                  _handleSearch('');
+                                });
+                              },
                             ),
-                            onChanged: (value) {
-                              ref
-                                  .read(propertyProvider.notifier)
-                                  .setSearchQuery(value.isEmpty ? null : value);
-                            },
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                            ),
                           ),
+                          onChanged: _handleSearch,
                         ),
-                        const SizedBox(width: 8),
-                        IconButton.filledTonal(
-                          icon: const Icon(Icons.tune),
-                          onPressed: _showFilterBottomSheet,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          propertyState.when(
+            loading:
+                () => const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+            error:
+                (error, stackTrace) => SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          error.toString(),
+                          style: const TextStyle(color: Colors.red),
                         ),
-                        const SizedBox(width: 8),
-                        IconButton.filledTonal(
-                          icon: const Icon(Icons.sort),
-                          onPressed: _showSortBottomSheet,
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed:
+                              () =>
+                                  ref
+                                      .read(propertyProvider.notifier)
+                                      .loadProperties(),
+                          child: const Text('Try Again'),
                         ),
                       ],
                     ),
                   ),
-                  if (_showFilters) ...[
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          _FilterChip(
-                            label: 'All',
-                            selected: propertyState.propertyType == null,
-                            onSelected:
-                                (_) => ref
-                                    .read(propertyProvider.notifier)
-                                    .setPropertyType(null),
-                          ),
-                          _FilterChip(
-                            label: 'Apartment',
-                            selected: propertyState.propertyType == 'Apartment',
-                            onSelected:
-                                (_) => ref
-                                    .read(propertyProvider.notifier)
-                                    .setPropertyType('Apartment'),
-                          ),
-                          _FilterChip(
-                            label: 'House',
-                            selected: propertyState.propertyType == 'House',
-                            onSelected:
-                                (_) => ref
-                                    .read(propertyProvider.notifier)
-                                    .setPropertyType('House'),
-                          ),
-                          _FilterChip(
-                            label: 'Penthouse',
-                            selected: propertyState.propertyType == 'Penthouse',
-                            onSelected:
-                                (_) => ref
-                                    .read(propertyProvider.notifier)
-                                    .setPropertyType('Penthouse'),
-                          ),
-                          _FilterChip(
-                            label: 'Studio',
-                            selected: propertyState.propertyType == 'Studio',
-                            onSelected:
-                                (_) => ref
-                                    .read(propertyProvider.notifier)
-                                    .setPropertyType('Studio'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  _showFilters ? Icons.filter_list_off : Icons.filter_list,
                 ),
-                onPressed: () {
-                  setState(() {
-                    _showFilters = !_showFilters;
-                  });
-                },
-              ),
-            ],
+            data: (state) {
+              if (state.isLoading) {
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (state.error != null) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          state.error!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed:
+                              () =>
+                                  ref
+                                      .read(propertyProvider.notifier)
+                                      .loadProperties(),
+                          child: const Text('Try Again'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              if (state.properties.isEmpty) {
+                return const SliverFillRemaining(
+                  child: Center(child: Text('No properties found')),
+                );
+              }
+              return SliverList(
+                delegate: SliverChildListDelegate(
+                  state.properties
+                      .map(
+                        (property) => Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: PropertyCard(
+                            property: property,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/property-detail',
+                                arguments: property.id,
+                              );
+                            },
+                            onFavorite: () {},
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              );
+            },
           ),
-          if (propertyState.isLoading)
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (propertyState.error != null)
-            SliverFillRemaining(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      propertyState.error!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed:
-                          () =>
-                              ref
-                                  .read(propertyProvider.notifier)
-                                  .loadProperties(),
-                      child: const Text('Try Again'),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else if (propertyState.properties.isEmpty)
-            const SliverFillRemaining(
-              child: Center(child: Text('No properties found')),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final property = propertyState.properties[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: PropertyCard(
-                      property: property,
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/property-detail',
-                          arguments: property.id,
-                        );
-                      },
-                      onFavorite: () {},
-                      // () => ref
-                      //     .read(propertyProvider.notifier)
-                      //     .toggleFavorite(property),
-                    ),
-                  );
-                }, childCount: propertyState.properties.length),
-              ),
-            ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showFilterBottomSheet,
+        icon: const Icon(Icons.tune),
+        label: const Text('Filters'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
 
-// filepath: /home/rda/src/imba/lib/presentation/screens/properties/property_list_screen.dart
 class _FilterBottomSheet extends ConsumerWidget {
   const _FilterBottomSheet();
 
@@ -245,101 +223,123 @@ class _FilterBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final propertyState = ref.watch(propertyProvider);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Filters',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text('Price Range', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 16),
-          RangeSlider(
-            values: RangeValues(
-              propertyState.minPrice ?? 0,
-              propertyState.maxPrice ?? 5000,
+    return propertyState.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(child: Text(error.toString())),
+      data:
+          (state) => Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
-            min: 0,
-            max: 5000,
-            divisions: 50,
-            labels: RangeLabels(
-              '\$${(propertyState.minPrice ?? 0).toStringAsFixed(0)}',
-              '\$${(propertyState.maxPrice ?? 5000).toStringAsFixed(0)}',
-            ),
-            onChanged: (values) {
-              ref
-                  .read(propertyProvider.notifier)
-                  .setPriceRange(values.start, values.end);
-            },
-          ),
-          const SizedBox(height: 24),
-          Text('Bedrooms', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            children: [
-              _FilterChip(
-                label: 'Any',
-                selected: propertyState.minBedrooms == null,
-                onSelected:
-                    (_) => ref
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Filters',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.sort),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _showSortBottomSheet(context);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Location',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Enter location',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surface,
+                  ),
+                  onChanged: (value) {
+                    ref
                         .read(propertyProvider.notifier)
-                        .setMinBedrooms(null),
-              ),
-              _FilterChip(
-                label: '1+',
-                selected: propertyState.minBedrooms == 1,
-                onSelected:
-                    (_) =>
-                        ref.read(propertyProvider.notifier).setMinBedrooms(1),
-              ),
-              _FilterChip(
-                label: '2+',
-                selected: propertyState.minBedrooms == 2,
-                onSelected:
-                    (_) =>
-                        ref.read(propertyProvider.notifier).setMinBedrooms(2),
-              ),
-              _FilterChip(
-                label: '3+',
-                selected: propertyState.minBedrooms == 3,
-                onSelected:
-                    (_) =>
-                        ref.read(propertyProvider.notifier).setMinBedrooms(3),
-              ),
-              _FilterChip(
-                label: '4+',
-                selected: propertyState.minBedrooms == 4,
-                onSelected:
-                    (_) =>
-                        ref.read(propertyProvider.notifier).setMinBedrooms(4),
-              ),
-            ],
+                        .setSearchQuery(value.isEmpty ? null : value);
+                  },
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Price Range',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                RangeSlider(
+                  values: RangeValues(
+                    state.minPrice ?? 0,
+                    state.maxPrice ?? 5000,
+                  ),
+                  min: 0,
+                  max: 5000,
+                  divisions: 50,
+                  labels: RangeLabels(
+                    '\$${(state.minPrice ?? 0).toStringAsFixed(0)}',
+                    '\$${(state.maxPrice ?? 5000).toStringAsFixed(0)}',
+                  ),
+                  onChanged: (values) {
+                    ref
+                        .read(propertyProvider.notifier)
+                        .setPriceRange(values.start, values.end);
+                  },
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        ref.read(propertyProvider.notifier).resetFilters();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Clear Filters'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Apply Filters'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ElevatedButton(
-                onPressed: () async {
-                  await ref.read(propertyProvider.notifier).resetFilters();
-                  Navigator.pop(context);
-                },
-                child: const Text('Clear Filters'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Apply Filters'),
-              ),
-            ],
-          ),
-        ],
-      ),
+    );
+  }
+
+  void _showSortBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _SortBottomSheet(),
     );
   }
 }
@@ -349,94 +349,89 @@ class _SortBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Sort By',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          _SortOption(
-            title: 'Price: Low to High',
-            selected:
-                ref.read(propertyProvider).sortBy == 'price' &&
-                ref.read(propertyProvider).sortOrder == 'asc',
-            onTap: () {
-              ref
-                  .read(propertyProvider.notifier)
-                  .setSortOptions('price', 'asc');
-              Navigator.pop(context);
-            },
-          ),
-          _SortOption(
-            title: 'Price: High to Low',
-            selected:
-                ref.read(propertyProvider).sortBy == 'price' &&
-                ref.read(propertyProvider).sortOrder == 'desc',
-            onTap: () {
-              ref
-                  .read(propertyProvider.notifier)
-                  .setSortOptions('price', 'desc');
-              Navigator.pop(context);
-            },
-          ),
-          // _SortOption(
-          //   title: 'Newest First',
-          //   selected:
-          //       ref.read(propertyProvider).sortBy == 'createdAt' &&
-          //       ref.read(propertyProvider).sortOrder == 'desc',
-          //   onTap: () {
-          //     ref
-          //         .read(propertyProvider.notifier)
-          //         .setSortOptions('createdAt', 'desc');
-          //     Navigator.pop(context);
-          //   },
-          // ),
-          // _SortOption(
-          //   title: 'Oldest First',
-          //   selected:
-          //       ref.read(propertyProvider).sortBy == 'createdAt' &&
-          //       ref.read(propertyProvider).sortOrder == 'asc',
-          //   onTap: () {
-          //     ref
-          //         .read(propertyProvider.notifier)
-          //         .setSortOptions('createdAt', 'asc');
-          //     Navigator.pop(context);
-          //   },
-          // ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Apply Sorting'),
-          ),
-        ],
-      ),
-    );
-  }
-}
+    final propertyState = ref.watch(propertyProvider);
 
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final void Function(bool)? onSelected;
-
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    this.onSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FilterChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: onSelected,
+    return propertyState.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(child: Text(error.toString())),
+      data:
+          (state) => Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Text('Sort By', style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 16),
+                _SortOption(
+                  title: 'Price: Low to High',
+                  selected: state.sortBy == 'price' && state.sortOrder == 'asc',
+                  onTap: () {
+                    ref
+                        .read(propertyProvider.notifier)
+                        .setSortOptions('price', 'asc');
+                    Navigator.pop(context);
+                  },
+                ),
+                _SortOption(
+                  title: 'Price: High to Low',
+                  selected:
+                      state.sortBy == 'price' && state.sortOrder == 'desc',
+                  onTap: () {
+                    ref
+                        .read(propertyProvider.notifier)
+                        .setSortOptions('price', 'desc');
+                    Navigator.pop(context);
+                  },
+                ),
+                _SortOption(
+                  title: 'Newest First',
+                  selected:
+                      state.sortBy == 'createdAt' && state.sortOrder == 'desc',
+                  onTap: () {
+                    ref
+                        .read(propertyProvider.notifier)
+                        .setSortOptions('createdAt', 'desc');
+                    Navigator.pop(context);
+                  },
+                ),
+                _SortOption(
+                  title: 'Oldest First',
+                  selected:
+                      state.sortBy == 'createdAt' && state.sortOrder == 'asc',
+                  onTap: () {
+                    ref
+                        .read(propertyProvider.notifier)
+                        .setSortOptions('createdAt', 'asc');
+                    Navigator.pop(context);
+                  },
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Apply Sorting'),
+                ),
+              ],
+            ),
+          ),
     );
   }
 }

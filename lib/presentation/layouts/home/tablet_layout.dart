@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:imba/core/providers/auth_provider.dart';
+import 'package:imba/data/models/user.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:imba/presentation/widgets/custom_app_bar.dart';
 
-class TabletHomeLayout extends StatelessWidget {
+class TabletHomeLayout extends ConsumerWidget {
   final int currentIndex;
   final List<Widget> screens;
   final ValueChanged<int> onIndexChanged;
@@ -13,42 +18,69 @@ class TabletHomeLayout extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Imba'),
-        automaticallyImplyLeading: false,
-        actions: [],
-      ),
+      appBar: const CustomAppBar(isTablet: true),
       body: Row(
         children: [
           NavigationRail(
+            extended: true,
             selectedIndex: currentIndex,
             onDestinationSelected: onIndexChanged,
-            destinations: const [
-              NavigationRailDestination(
-                icon: ImageIcon(AssetImage('assets/icon/home.png')),
-                selectedIcon: Icon(Icons.home),
-                label: Text('Home'),
+
+            destinations: [
+              const NavigationRailDestination(
+                icon: FaIcon(FontAwesomeIcons.house),
+                label: Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Text('Home'),
+                ),
               ),
-              NavigationRailDestination(
-                icon: ImageIcon(AssetImage('assets/icon/heart.png')),
-                selectedIcon: Icon(Icons.favorite),
-                label: Text('Favorites'),
+              const NavigationRailDestination(
+                icon: FaIcon(FontAwesomeIcons.heart),
+                selectedIcon: FaIcon(FontAwesomeIcons.solidHeart),
+                label: Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Text('Favorites'),
+                ),
               ),
-              NavigationRailDestination(
-                icon: ImageIcon(AssetImage('assets/icon/envelope.png')),
-                selectedIcon: Icon(Icons.message),
-                label: Text('Messages'),
+              const NavigationRailDestination(
+                icon: FaIcon(FontAwesomeIcons.message),
+                selectedIcon: FaIcon(FontAwesomeIcons.solidMessage),
+                label: Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Text('Messages'),
+                ),
               ),
-              NavigationRailDestination(
-                icon: ImageIcon(AssetImage('assets/icon/user.png')),
-                selectedIcon: Icon(Icons.person),
-                label: Text('Profile'),
+              const NavigationRailDestination(
+                icon: FaIcon(FontAwesomeIcons.user),
+                selectedIcon: FaIcon(FontAwesomeIcons.solidUser),
+                label: Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Text('Profile'),
+                ),
               ),
+              if (user?.role == UserRole.landlord)
+                const NavigationRailDestination(
+                  icon: FaIcon(FontAwesomeIcons.building),
+                  label: Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: Text('My Properties'),
+                  ),
+                )
+              else if (user?.role == UserRole.agent)
+                const NavigationRailDestination(
+                  icon: FaIcon(FontAwesomeIcons.building),
+                  label: Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: Text('Assigned Properties'),
+                  ),
+                ),
             ],
           ),
-          const VerticalDivider(thickness: 1, width: 1),
           Expanded(child: screens[currentIndex]),
         ],
       ),

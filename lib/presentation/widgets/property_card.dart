@@ -82,7 +82,7 @@ class PropertyCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            property.location,
+                            property.location ?? 'No location specified',
                             style: Theme.of(context).textTheme.bodyMedium,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

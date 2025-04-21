@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:imba/presentation/screens/profile/change_password_screen.dart';
 import 'package:imba/presentation/screens/profile/edit_profile_screen.dart';
+import 'package:imba/presentation/screens/properties/my_properties_screen.dart';
 import 'package:imba/presentation/screens/settings/settings_screen.dart';
 import 'package:imba/presentation/screens/support/help_and_support.dart';
 import '../presentation/screens/splash/splash_screen.dart';
@@ -43,6 +44,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const HelpAndSupportPage());
       case '/payment':
         return MaterialPageRoute(builder: (_) => const PaymentScreen());
+      case '/my-listings':
+        return MaterialPageRoute(builder: (_) => const MyPropertiesScreen());
       default:
         return MaterialPageRoute(
           builder:

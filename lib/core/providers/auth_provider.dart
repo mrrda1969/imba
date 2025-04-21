@@ -1,46 +1,72 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imba/data/models/user.dart';
+import 'package:imba/data/mock/mock_users.dart';
+import 'package:imba/core/services/storage_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthState {
   final User? user;
   final bool isLoading;
   final String? error;
+  final bool isAuthenticated;
 
-  const AuthState({this.user, this.isLoading = false, this.error});
+  const AuthState({
+    this.user,
+    this.isLoading = false,
+    this.error,
+    this.isAuthenticated = false,
+  });
 
-  AuthState copyWith({User? user, bool? isLoading, String? error}) {
+  AuthState copyWith({
+    User? user,
+    bool? isLoading,
+    String? error,
+    bool? isAuthenticated,
+  }) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
     );
   }
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState());
+  final StorageService _storage;
+
+  AuthNotifier(this._storage) : super(const AuthState()) {
+    _initializeAuthState();
+  }
+
+  Future<void> _initializeAuthState() async {
+    final user = _storage.getUser();
+    if (user != null) {
+      state = state.copyWith(user: user, isAuthenticated: true);
+    }
+  }
 
   Future<void> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // TODO: Implement actual login logic
-      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
-
-      // For demo purposes, create a dummy user
-      final user = User(
-        id: '1',
-        email: email,
-        fullName: 'John Doe',
-        role: UserRole.tenant,
-        createdAt: DateTime.now(),
-        isVerified: false,
-        favoriteProperties: [],
+      final user = mockUsers.firstWhere(
+        (user) => user.email == email && user.password == password,
+        orElse: () => throw Exception('Invalid credentials'),
       );
 
-      state = state.copyWith(user: user, isLoading: false);
+      await _storage.saveUser(user);
+      state = state.copyWith(
+        user: user,
+        isLoading: false,
+        isAuthenticated: true,
+      );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Login failed: $e');
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+        isAuthenticated: false,
+      );
     }
   }
 
@@ -56,31 +82,49 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     try {
       // TODO: Implement actual signup logic
-      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
+      await Future.delayed(const Duration(seconds: 1));
 
-      // For demo purposes, create a dummy user
       final user = User(
-        id: '1',
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
         email: email,
         fullName: '$firstName $lastName',
         phoneNumber: phone,
         role: role,
-        createdAt: DateTime.now(),
         isVerified: false,
         favoriteProperties: [],
       );
 
-      state = state.copyWith(user: user, isLoading: false);
+      await _storage.saveUser(user);
+      state = state.copyWith(
+        user: user,
+        isLoading: false,
+        isAuthenticated: true,
+      );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Signup failed: $e');
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Signup failed: $e',
+        isAuthenticated: false,
+      );
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
+    await _storage.removeUser();
     state = const AuthState();
   }
 }
 
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError();
+});
+
+final storageServiceProvider = Provider<StorageService>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return StorageService(prefs);
+});
+
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
+  final storage = ref.watch(storageServiceProvider);
+  return AuthNotifier(storage);
 });

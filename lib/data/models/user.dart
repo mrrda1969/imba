@@ -5,22 +5,22 @@ enum UserRole { tenant, landlord, agent }
 class User extends Equatable {
   final String id;
   final String email;
+  final String? password;
   final String fullName;
   final String? phoneNumber;
   final String? profileImage;
   final UserRole role;
-  final DateTime createdAt;
   final bool isVerified;
   final List<String> favoriteProperties;
 
   const User({
     required this.id,
     required this.email,
+    this.password,
     required this.fullName,
     this.phoneNumber,
     this.profileImage,
     required this.role,
-    required this.createdAt,
     required this.isVerified,
     required this.favoriteProperties,
   });
@@ -29,13 +29,13 @@ class User extends Equatable {
     return User(
       id: json['id'] as String,
       email: json['email'] as String,
+      password: json['password'] as String?,
       fullName: json['fullName'] as String,
       phoneNumber: json['phoneNumber'] as String?,
       profileImage: json['profileImage'] as String?,
       role: UserRole.values.firstWhere(
         (role) => role.toString() == 'UserRole.${json['role']}',
       ),
-      createdAt: DateTime.parse(json['createdAt'] as String),
       isVerified: json['isVerified'] as bool,
       favoriteProperties: List<String>.from(json['favoriteProperties'] as List),
     );
@@ -45,11 +45,11 @@ class User extends Equatable {
     return {
       'id': id,
       'email': email,
+      'password': password,
       'fullName': fullName,
       'phoneNumber': phoneNumber,
       'profileImage': profileImage,
       'role': role.toString().split('.').last,
-      'createdAt': createdAt.toIso8601String(),
       'isVerified': isVerified,
       'favoriteProperties': favoriteProperties,
     };
@@ -57,20 +57,21 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        email,
-        fullName,
-        phoneNumber,
-        profileImage,
-        role,
-        createdAt,
-        isVerified,
-        favoriteProperties,
-      ];
+    id,
+    email,
+    fullName,
+    password,
+    phoneNumber,
+    profileImage,
+    role,
+    isVerified,
+    favoriteProperties,
+  ];
 
   User copyWith({
     String? id,
     String? email,
+    String? password,
     String? fullName,
     String? phoneNumber,
     String? profileImage,
@@ -82,11 +83,11 @@ class User extends Equatable {
     return User(
       id: id ?? this.id,
       email: email ?? this.email,
+      password: password ?? this.password,
       fullName: fullName ?? this.fullName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       profileImage: profileImage ?? this.profileImage,
       role: role ?? this.role,
-      createdAt: createdAt ?? this.createdAt,
       isVerified: isVerified ?? this.isVerified,
       favoriteProperties: favoriteProperties ?? this.favoriteProperties,
     );

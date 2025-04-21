@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imba/data/models/user.dart';
-import 'package:provider/provider.dart';
+import 'package:imba/core/providers/auth_provider.dart';
+import 'package:imba/presentation/widgets/custom_app_bar.dart';
 
-class MobileHomeLayout extends StatelessWidget {
+class MobileHomeLayout extends ConsumerWidget {
   final int currentIndex;
   final List<Widget> screens;
   final ValueChanged<int> onIndexChanged;
@@ -15,51 +17,35 @@ class MobileHomeLayout extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final user = context.watch<User?>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Imba'),
-        automaticallyImplyLeading: false,
-        actions: [
-          // IconButton(
-          //   icon: ImageIcon(AssetImage('assets/icon/search.png'), size: 16),
-          //   onPressed: () {
-          //     // TODO: Implement search
-          //   },
-          // ),
-          // IconButton(
-          //   icon: const Icon(Icons.notifications_outlined),
-          //   onPressed: () {
-          //     // TODO: Implement notifications
-          //   },
-          // ),
-        ],
-      ),
-      endDrawer: _buildDrawer(context, user, theme),
+      appBar: const CustomAppBar(isMobile: true),
+      endDrawer: _buildDrawer(context, user, theme, ref),
       body: screens[currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentIndex,
         onDestinationSelected: onIndexChanged,
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: ImageIcon(AssetImage('assets/icon/home.png')),
             selectedIcon: Icon(Icons.home),
             label: 'Home',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: ImageIcon(AssetImage('assets/icon/heart.png')),
             selectedIcon: Icon(Icons.favorite),
             label: 'Favorites',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: ImageIcon(AssetImage('assets/icon/envelope.png')),
             selectedIcon: Icon(Icons.message),
             label: 'Messages',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: ImageIcon(AssetImage('assets/icon/user.png')),
             selectedIcon: Icon(Icons.person),
             label: 'Profile',
@@ -69,7 +55,12 @@ class MobileHomeLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawer(BuildContext context, User? user, ThemeData theme) {
+  Widget _buildDrawer(
+    BuildContext context,
+    User? user,
+    ThemeData theme,
+    WidgetRef ref,
+  ) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -84,23 +75,47 @@ class MobileHomeLayout extends StatelessWidget {
             accountEmail: Text(user?.email ?? ''),
             decoration: BoxDecoration(color: theme.colorScheme.primary),
           ),
-          _buildDrawerItems(context),
+          _buildDrawerItems(context, ref),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerItems(BuildContext context) {
+  Widget _buildDrawerItems(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+
     return Column(
       children: [
-        _buildDrawerItem(Icons.home_outlined, 'Home', 0, context),
-        _buildDrawerItem(Icons.favorite_outline, 'Favorites', 1, context),
-        _buildDrawerItem(Icons.message_outlined, 'Messages', 2, context),
-        _buildDrawerItem(Icons.person_outline, 'Profile', 3, context),
+        _buildDrawerItem(Icons.home_outlined, 'Home', 0, context, ref),
+        _buildDrawerItem(Icons.favorite_outline, 'Favorites', 1, context, ref),
+        _buildDrawerItem(Icons.message_outlined, 'Messages', 2, context, ref),
+        _buildDrawerItem(Icons.person_outline, 'Profile', 3, context, ref),
+        if (user?.role == UserRole.landlord || user?.role == UserRole.agent)
+          _buildDrawerItem(
+            Icons.business_outlined,
+            'My Properties',
+            null,
+            context,
+            ref,
+          ),
+        // _buildDrawerItem(Icons.list_alt_outlined, 'My Listings', null, context),
         const Divider(),
-        _buildDrawerItem(Icons.settings_outlined, 'Settings', null, context),
-        _buildDrawerItem(Icons.help_outline, 'Help & Support', null, context),
-        _buildDrawerItem(Icons.logout, 'Logout', null, context),
+        _buildDrawerItem(
+          Icons.settings_outlined,
+          'Settings',
+          null,
+          context,
+          ref,
+        ),
+        _buildDrawerItem(
+          Icons.help_outline,
+          'Help & Support',
+          null,
+          context,
+          ref,
+        ),
+        _buildDrawerItem(Icons.logout, 'Logout', null, context, ref),
       ],
     );
   }
@@ -110,6 +125,7 @@ class MobileHomeLayout extends StatelessWidget {
     String title,
     int? index,
     BuildContext context,
+    WidgetRef ref,
   ) {
     return ListTile(
       leading: Icon(icon),
@@ -120,6 +136,9 @@ class MobileHomeLayout extends StatelessWidget {
           onIndexChanged(index);
         } else {
           switch (title) {
+            case 'My Properties':
+              Navigator.pushNamed(context, '/my-listings');
+              break;
             case 'Settings':
               Navigator.pushNamed(context, '/settings');
               break;
@@ -127,7 +146,13 @@ class MobileHomeLayout extends StatelessWidget {
               Navigator.pushNamed(context, '/help');
               break;
             case 'Logout':
-              Navigator.pushNamed(context, '/login');
+              ref.read(authProvider.notifier).logout();
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
+              break;
           }
         }
       },

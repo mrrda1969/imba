@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:imba/core/providers/auth_provider.dart';
+import 'package:imba/data/models/user.dart';
+import 'package:imba/presentation/widgets/custom_app_bar.dart';
 
-class DesktopHomeLayout extends StatelessWidget {
+class DesktopHomeLayout extends ConsumerWidget {
   final int currentIndex;
   final List<Widget> screens;
   final ValueChanged<int> onIndexChanged;
@@ -14,8 +18,12 @@ class DesktopHomeLayout extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+
     return Scaffold(
+      appBar: const CustomAppBar(isDesktop: true),
       body: Row(
         children: [
           // Left Sidebar
@@ -26,32 +34,40 @@ class DesktopHomeLayout extends StatelessWidget {
               extended: true,
               selectedIndex: currentIndex,
               onDestinationSelected: onIndexChanged,
-              destinations: const [
-                NavigationRailDestination(
+              destinations: [
+                const NavigationRailDestination(
                   icon: FaIcon(FontAwesomeIcons.house),
-                  // selectedIcon: FaIcon(FontAwesomeIcons.House),
                   label: Text('Home'),
                 ),
-                NavigationRailDestination(
+                const NavigationRailDestination(
                   icon: FaIcon(FontAwesomeIcons.heart),
                   selectedIcon: FaIcon(FontAwesomeIcons.solidHeart),
                   label: Text('Favorites'),
                 ),
-                NavigationRailDestination(
+                const NavigationRailDestination(
                   icon: FaIcon(FontAwesomeIcons.message),
                   selectedIcon: FaIcon(FontAwesomeIcons.solidMessage),
-                  // selectedIcon: Icon(Icons.message),
                   label: Text('Messages'),
                 ),
-                NavigationRailDestination(
+                const NavigationRailDestination(
                   icon: FaIcon(FontAwesomeIcons.user),
                   selectedIcon: FaIcon(FontAwesomeIcons.solidUser),
                   label: Text('Profile'),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.list_alt_rounded),
-                  label: Text('My Listings'),
-                ),
+                if (user?.role == UserRole.landlord)
+                  const NavigationRailDestination(
+                    icon: FaIcon(FontAwesomeIcons.building),
+                    label: Text('My Properties'),
+                  )
+                else if (user?.role == UserRole.agent)
+                  const NavigationRailDestination(
+                    icon: FaIcon(FontAwesomeIcons.building),
+                    label: Text('Assigned Properties'),
+                  ),
+                // const NavigationRailDestination(
+                //   icon: Icon(Icons.list_alt_rounded),
+                //   label: Text('My Listings'),
+                // ),
               ],
             ),
           ),

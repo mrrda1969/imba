@@ -4,33 +4,39 @@ class Property extends Equatable {
   final String id;
   final String title;
   final String description;
-  final String location;
-  final double price;
+  final String? location;
+  final double? price;
   final List<String> images;
-  final int bedrooms;
-  final int bathrooms;
-  final double area;
+  final int? bedrooms;
+  final int? bathrooms;
+  final double? area;
   final String? type;
   final List<String> amenities;
-  final double latitude;
-  final double longitude;
+  final double? latitude;
+  final double? longitude;
   final bool isFavorite;
+  final String? ownerId;
+  final String? agentId;
+  final bool isComplete;
 
   const Property({
     required this.id,
     required this.title,
     required this.description,
-    required this.location,
-    required this.price,
+    this.location,
+    this.price,
     required this.images,
-    required this.bedrooms,
-    required this.bathrooms,
-    required this.area,
+    this.bedrooms,
+    this.bathrooms,
+    this.area,
     this.type,
     required this.amenities,
-    required this.latitude,
-    required this.longitude,
+    this.latitude,
+    this.longitude,
     this.isFavorite = false,
+    this.ownerId,
+    this.agentId,
+    this.isComplete = false,
   });
 
   factory Property.fromJson(Map<String, dynamic> json) {
@@ -38,17 +44,26 @@ class Property extends Equatable {
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      location: json['location'] as String,
-      price: (json['price'] as num).toDouble(),
+      location: json['location'] as String?,
+      price: json['price'] != null ? (json['price'] as num).toDouble() : null,
       images: json['images'] as List<String>,
-      bedrooms: json['bedrooms'] as int,
-      bathrooms: json['bathrooms'] as int,
-      area: (json['area'] as num).toDouble(),
-      type: json['type'] as String,
+      bedrooms: json['bedrooms'] as int?,
+      bathrooms: json['bathrooms'] as int?,
+      area: json['area'] != null ? (json['area'] as num).toDouble() : null,
+      type: json['type'] as String?,
       amenities: json['amenities'] as List<String>,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
+      latitude:
+          json['latitude'] != null
+              ? (json['latitude'] as num).toDouble()
+              : null,
+      longitude:
+          json['longitude'] != null
+              ? (json['longitude'] as num).toDouble()
+              : null,
       isFavorite: json['isFavorite'] as bool,
+      ownerId: json['ownerId'] as String?,
+      agentId: json['agentId'] as String?,
+      isComplete: json['isComplete'] as bool? ?? false,
     );
   }
 
@@ -68,6 +83,9 @@ class Property extends Equatable {
       'latitude': latitude,
       'longitude': longitude,
       'isFavorite': isFavorite,
+      'ownerId': ownerId,
+      'agentId': agentId,
+      'isComplete': isComplete,
     };
   }
 
@@ -87,6 +105,9 @@ class Property extends Equatable {
     latitude,
     longitude,
     isFavorite,
+    ownerId,
+    agentId,
+    isComplete,
   ];
 
   Property copyWith({
@@ -104,6 +125,9 @@ class Property extends Equatable {
     double? latitude,
     double? longitude,
     bool? isFavorite,
+    String? ownerId,
+    String? agentId,
+    bool? isComplete,
   }) {
     return Property(
       id: id ?? this.id,
@@ -120,6 +144,9 @@ class Property extends Equatable {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isFavorite: isFavorite ?? this.isFavorite,
+      ownerId: ownerId ?? this.ownerId,
+      agentId: agentId ?? this.agentId,
+      isComplete: isComplete ?? this.isComplete,
     );
   }
 
@@ -144,6 +171,9 @@ class Property extends Equatable {
         latitude: -17.613939,
         longitude: 31.005392,
         isFavorite: false,
+        ownerId: '3',
+        agentId: '2',
+        isComplete: true,
       ),
       Property(
         id: '2',
@@ -163,6 +193,9 @@ class Property extends Equatable {
         latitude: -17.810128,
         longitude: 30.950258,
         isFavorite: false,
+        ownerId: '1',
+        agentId: '4',
+        isComplete: true,
       ),
       Property(
         id: '3',
@@ -182,6 +215,9 @@ class Property extends Equatable {
         latitude: -17.795612,
         longitude: 31.035934,
         isFavorite: false,
+        ownerId: '2',
+        agentId: '3',
+        isComplete: true,
       ),
       Property(
         id: '4',
@@ -201,6 +237,9 @@ class Property extends Equatable {
         latitude: -17.786964,
         longitude: 31.048424,
         isFavorite: false,
+        ownerId: '2',
+        agentId: '3',
+        isComplete: true,
       ),
     ];
   }

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:imba/core/providers/auth_provider.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -19,9 +21,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (!mounted) return;
 
-    // TODO: Check if user is logged in
-    // For now, navigate to login screen
-    Navigator.pushReplacementNamed(context, '/login');
+    final authState = ref.read(authProvider);
+    Navigator.pushReplacementNamed(
+      context,
+      authState.isAuthenticated ? '/home' : '/login',
+    );
   }
 
   @override
