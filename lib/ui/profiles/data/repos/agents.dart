@@ -1,0 +1,40 @@
+import 'package:imba/ui/profiles/data/models/agency.dart';
+
+final List<Agency> staticAgencies = [
+  Agency(
+    agencyId: 'agency-1',
+    agencyName: 'Harare Realty',
+    contactEmail: 'info@realty.com',
+    phoneNumber: '+263 77 123 4567',
+    whatsappNumber: '+263 77 123 4567',
+    address: '123 Main Street, Harare',
+    primarySuburb: 'Avondale',
+    allowedSuburbs: ['Avondale', 'Borrowdale', 'Mount Pleasant'],
+    parentAgencyId: null,
+    agencyLogo: 'https://example.com/logo1.png',
+  ),
+  Agency(
+    agencyId: 'agency-2',
+    agencyName: 'Bulawayo Estates',
+    contactEmail: 'info@byoestates.com',
+    phoneNumber: '+263 77 234 5678',
+    whatsappNumber: '+263 77 234 5678',
+    address: '456 Elm Street, Bulawayo',
+    primarySuburb: 'Burnside',
+    allowedSuburbs: ['Burnside', 'Hillside', 'Suburbs'],
+    parentAgencyId: null,
+    agencyLogo: 'https://example.com/logo2.png',
+  ),
+  Agency(
+    agencyId: 'agency-3',
+    agencyName: 'Coastal Properties',
+    contactEmail: 'info@coastal.com',
+    phoneNumber: '+263 77 345 6789',
+    whatsappNumber: '+263 77 345 6789',
+    address: '789 Ocean Drive, Victoria Falls',
+    primarySuburb: 'Victoria Falls',
+    allowedSuburbs: ['Victoria Falls', 'Hwange', 'Kariba'],
+    parentAgencyId: null,
+    agencyLogo: 'https://example.com/logo3.png',
+  ),
+];
