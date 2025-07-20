@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:imba/app.dart';
-import 'package:imba/ui/auth/presentation/providers/auth_providers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:imba/src/providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final prefs = await SharedPreferences.getInstance();
+  final container = ProviderContainer();
 
-  runApp(
-    ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: MyApp(),
-    ),
-  );
+  await container.read(authProvider.notifier).loadUser();
+
+  runApp(UncontrolledProviderScope(container: container, child: MyApp()));
 }

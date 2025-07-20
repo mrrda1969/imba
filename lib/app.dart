@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:imba/config/routes/routes.dart';
-import 'package:imba/config/themes/theme.dart';
-import 'package:imba/config/themes/theme_provider.dart';
-import 'package:imba/ui/auth/presentation/providers/auth_providers.dart';
+import 'package:imba/src/providers/auth_provider.dart';
+import 'package:imba/src/providers/theme_provider.dart';
+import 'package:imba/src/screens/auth/login_screen.dart';
+import 'package:imba/src/screens/home/home_screen.dart';
+import 'package:imba/src/screens/shell_screen.dart';
+import 'package:imba/src/themes/theme.dart';
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isDarkMode = ref.watch(themeProviderNotifier);
-    final authState = ref.watch(authProvider);
+    bool isDarkMode = ref.watch(themeProviderNotifier);
+    final user = ref.watch(authProvider);
 
     return MaterialApp(
-      title: 'Imba',
-      theme: isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
+      title: 'Your App',
       debugShowCheckedModeBanner: false,
-      routes: Routes.routes,
-      initialRoute: authState.isAuthenticated ? '/' : '/login',
+      theme: isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
+      home: user != null ? const ShellScreen() : const LoginScreen(),
     );
   }
 }
