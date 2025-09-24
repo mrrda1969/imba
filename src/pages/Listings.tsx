@@ -345,9 +345,8 @@ export const Listings: React.FC = () => {
             </label>
             <input
               type="number"
+              min={0}
               required
-              min="0"
-              step="1000"
               value={formData.price}
               onChange={(e) =>
                 setFormData({ ...formData, price: e.target.value })

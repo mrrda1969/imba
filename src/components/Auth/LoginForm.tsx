@@ -1,56 +1,54 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Button } from '../Common/Button';
-import { Building2 } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { Button } from "../Common/Button";
 
 export const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       await login(email, password);
-      navigate('/');
+      navigate("/");
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Login failed');
+      setError(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 shadow-md p-12 rounded-lg bg-white">
         <div>
-          <div className="flex justify-center">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
-          </div>
+          <div className="flex justify-center"></div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to RealEstate Admin
+            Sign in
           </h2>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
-          
+
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
               Email address
             </label>
             <input
@@ -63,9 +61,12 @@ export const LoginForm: React.FC = () => {
               placeholder="Enter your email"
             />
           </div>
-          
+
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
             <input
@@ -78,13 +79,8 @@ export const LoginForm: React.FC = () => {
               placeholder="Enter your password"
             />
           </div>
-          
-          <Button
-            type="submit"
-            loading={loading}
-            className="w-full"
-            size="lg"
-          >
+
+          <Button type="submit" loading={loading} className="w-full" size="lg">
             Sign in
           </Button>
         </form>

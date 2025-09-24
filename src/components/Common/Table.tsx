@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import React from "react";
+import { ChevronUp, ChevronDown, Filter } from "lucide-react";
 
 export interface Column<T> {
   key: string;
@@ -12,7 +12,7 @@ interface TableProps<T> {
   data: T[];
   columns: Column<T>[];
   sortKey?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
   onSort?: (key: string) => void;
   className?: string;
 }
@@ -23,7 +23,7 @@ export const Table = <T extends Record<string, any>>({
   sortKey,
   sortOrder,
   onSort,
-  className = ''
+  className = "",
 }: TableProps<T>) => {
   const handleSort = (key: string) => {
     if (onSort) {
@@ -47,11 +47,12 @@ export const Table = <T extends Record<string, any>>({
                     className="flex items-center space-x-1 hover:text-gray-700"
                   >
                     <span>{column.label}</span>
+                    <Filter className="w-3 h-3 text-gray-400 ml-1" />
                     {sortKey === column.key ? (
-                      sortOrder === 'asc' ? (
-                        <ChevronUp className="w-4 h-4" />
+                      sortOrder === "asc" ? (
+                        <ChevronUp className="w-4 h-4 text-blue-500" />
                       ) : (
-                        <ChevronDown className="w-4 h-4" />
+                        <ChevronDown className="w-4 h-4 text-blue-500" />
                       )
                     ) : (
                       <ChevronUp className="w-4 h-4 opacity-30" />
@@ -68,7 +69,10 @@ export const Table = <T extends Record<string, any>>({
           {data.map((item, index) => (
             <tr key={index} className="hover:bg-gray-50">
               {columns.map((column) => (
-                <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td
+                  key={column.key}
+                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                >
                   {column.render ? column.render(item) : item[column.key]}
                 </td>
               ))}

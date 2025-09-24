@@ -52,10 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-800">RealEstate</h1>
+              <h1 className="text-xl font-bold text-gray-800">Lodging</h1>
             </div>
             <button
               onClick={onToggle}

@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
-import { apiService } from '../services/api';
-import { User } from '../types';
-import { Button } from '../components/Common/Button';
-import { Modal } from '../components/Common/Modal';
-import { Table, Column } from '../components/Common/Table';
-import { LoadingSpinner } from '../components/Common/LoadingSpinner';
+import React, { useState, useEffect } from "react";
+import { Plus, Edit, Trash2, Search } from "lucide-react";
+import { apiService } from "../services/api";
+import { User } from "../types";
+import { Button } from "../components/Common/Button";
+import { Modal } from "../components/Common/Modal";
+import { Table, Column } from "../components/Common/Table";
+import { LoadingSpinner } from "../components/Common/LoadingSpinner";
 
 export const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortKey, setSortKey] = useState<string>('');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortKey, setSortKey] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const [formData, setFormData] = useState({
-    firstname: '',
-    lastname: '',
-    email: '',
-    phone: '',
-    role: 'user' as 'admin' | 'agent' | 'user',
-    password: ''
+    firstname: "",
+    lastname: "",
+    email: "",
+    phone: "",
+    role: "user" as "admin" | "agent" | "user",
+    password: "",
   });
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export const Users: React.FC = () => {
       const data = await apiService.getUsers();
       setUsers(data);
     } catch (error) {
-      setError('Failed to fetch users');
+      setError("Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -46,8 +46,15 @@ export const Users: React.FC = () => {
     e.preventDefault();
     try {
       if (editingUser) {
-        const updatedUser = await apiService.updateUser(editingUser._id, formData);
-        setUsers(users.map(user => user._id === editingUser._id ? updatedUser : user));
+        const updatedUser = await apiService.updateUser(
+          editingUser._id,
+          formData
+        );
+        setUsers(
+          users.map((user) =>
+            user._id === editingUser._id ? updatedUser : user
+          )
+        );
       } else {
         const newUser = await apiService.createUser(formData);
         setUsers([...users, newUser]);
@@ -55,7 +62,7 @@ export const Users: React.FC = () => {
       setIsModalOpen(false);
       resetForm();
     } catch (error) {
-      setError('Failed to save user');
+      setError("Failed to save user");
     }
   };
 
@@ -65,72 +72,78 @@ export const Users: React.FC = () => {
       firstname: user.firstname,
       lastname: user.lastname,
       email: user.email,
-      phone: user.phone || '',
+      phone: user.phone || "",
       role: user.role,
-      password: ''
+      password: "",
     });
     setIsModalOpen(true);
   };
 
   const handleDelete = async (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm("Are you sure you want to delete this user?")) {
       try {
         await apiService.deleteUser(userId);
-        setUsers(users.filter(user => user._id !== userId));
+        setUsers(users.filter((user) => user._id !== userId));
       } catch (error) {
-        setError('Failed to delete user');
+        setError("Failed to delete user");
       }
     }
   };
 
   const resetForm = () => {
     setFormData({
-      firstname: '',
-      lastname: '',
-      email: '',
-      phone: '',
-      role: 'user',
-      password: ''
+      firstname: "",
+      lastname: "",
+      email: "",
+      phone: "",
+      role: "user",
+      password: "",
     });
     setEditingUser(null);
   };
 
   const handleSort = (key: string) => {
     if (sortKey === key) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortKey(key);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.firstname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.lastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.firstname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     if (!sortKey) return 0;
-    
+
     const aValue = a[sortKey as keyof User];
     const bValue = b[sortKey as keyof User];
-    
-    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+
+    if (aValue === undefined && bValue === undefined) return 0;
+    if (aValue === undefined) return sortOrder === "asc" ? 1 : -1;
+    if (bValue === undefined) return sortOrder === "asc" ? -1 : 1;
+
+    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
     return 0;
   });
 
   const columns: Column<User>[] = [
     {
-      key: 'firstname',
-      label: 'Name',
+      key: "firstname",
+      label: "Name",
       sortable: true,
       render: (user) => (
         <div className="flex items-center">
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
             <span className="text-sm font-medium text-gray-700">
-              {user.firstname[0]}{user.lastname[0]}
+              {user.firstname[0]}
+              {user.lastname[0]}
             </span>
           </div>
           <div>
@@ -139,35 +152,39 @@ export const Users: React.FC = () => {
             </p>
           </div>
         </div>
-      )
+      ),
     },
     {
-      key: 'email',
-      label: 'Email',
-      sortable: true
+      key: "email",
+      label: "Email",
+      sortable: true,
     },
     {
-      key: 'phone',
-      label: 'Phone',
-      render: (user) => user.phone || '-'
+      key: "phone",
+      label: "Phone",
+      render: (user) => user.phone || "-",
     },
     {
-      key: 'role',
-      label: 'Role',
+      key: "role",
+      label: "Role",
       sortable: true,
       render: (user) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          user.role === 'admin' ? 'bg-red-100 text-red-800' :
-          user.role === 'agent' ? 'bg-blue-100 text-blue-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            user.role === "admin"
+              ? "bg-red-100 text-red-800"
+              : user.role === "agent"
+              ? "bg-blue-100 text-blue-800"
+              : "bg-gray-100 text-gray-800"
+          }`}
+        >
           {user.role}
         </span>
-      )
+      ),
     },
     {
-      key: 'actions',
-      label: 'Actions',
+      key: "actions",
+      label: "Actions",
       render: (user) => (
         <div className="flex space-x-2">
           <Button
@@ -185,8 +202,8 @@ export const Users: React.FC = () => {
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   if (loading) {
@@ -244,7 +261,7 @@ export const Users: React.FC = () => {
           setIsModalOpen(false);
           resetForm();
         }}
-        title={editingUser ? 'Edit User' : 'Add New User'}
+        title={editingUser ? "Edit User" : "Add New User"}
         maxWidth="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -257,7 +274,9 @@ export const Users: React.FC = () => {
                 type="text"
                 required
                 value={formData.firstname}
-                onChange={(e) => setFormData({ ...formData, firstname: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, firstname: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -269,7 +288,9 @@ export const Users: React.FC = () => {
                 type="text"
                 required
                 value={formData.lastname}
-                onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, lastname: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -283,7 +304,9 @@ export const Users: React.FC = () => {
               type="email"
               required
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -295,7 +318,9 @@ export const Users: React.FC = () => {
             <input
               type="tel"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -306,7 +331,12 @@ export const Users: React.FC = () => {
             </label>
             <select
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'agent' | 'user' })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  role: e.target.value as "admin" | "agent" | "user",
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="user">User</option>
@@ -324,7 +354,9 @@ export const Users: React.FC = () => {
                 type="password"
                 required
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -342,7 +374,7 @@ export const Users: React.FC = () => {
               Cancel
             </Button>
             <Button type="submit">
-              {editingUser ? 'Update' : 'Create'} User
+              {editingUser ? "Update" : "Create"} User
             </Button>
           </div>
         </form>
